@@ -1,3 +1,5 @@
+import logo from "../assets/Logo.png";
+
 export default function Logo({
   width = 180,
   height = "auto",
@@ -5,7 +7,7 @@ export default function Logo({
 }) {
   return (
     <img
-      src="/assets/Logo.png"
+      src={logo}
       alt="QuizForge"
       className={className}
       width={width}
