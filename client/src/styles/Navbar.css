@@ -1,0 +1,232 @@
+/* Navbar.css */
+
+.navbar-sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 224px;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  background: var(--sidebar);
+  border-right: 1px solid var(--border-dark);
+}
+
+.navbar-logo-wrap{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:24px 16px;
+    border-bottom:1px solid var(--border-dark);
+}
+
+.navbar-logo{
+    width:100%;
+    max-width:165px;
+    height:auto;
+    display:block;
+}
+
+.navbar-nav {
+  flex: 1;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.navbar-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  width: 100%;
+  text-align: left;
+  color: var(--text-muted);
+  background: transparent;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navbar-link:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.navbar-link.active {
+  background: var(--primary);
+  color: #fff;
+}
+
+.navbar-link-icon {
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.navbar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--border-dark);
+}
+
+.navbar-logout-btn {
+  width: 100%;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--red-border);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--red);
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.navbar-logout-btn:hover {
+  background: #1e1111;
+}
+
+/* ==========================
+   Mobile Bottom Navigation
+========================== */
+
+.navbar-mobile {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  background: var(--sidebar);
+  border-top: 1px solid var(--border-dark);
+}
+
+.navbar-mobile-link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0;
+  gap: 2px;
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-faint);
+  transition: color 0.15s;
+}
+
+.navbar-mobile-link.active {
+  color: var(--primary);
+}
+
+.navbar-mobile-icon {
+  font-size: 1.2rem;
+}
+
+/* ==========================
+   Logout Modal
+========================== */
+
+.logout-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.logout-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  max-width: 360px;
+  width: 100%;
+  margin: 0 16px;
+  box-shadow: var(--shadow-modal);
+}
+
+.logout-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--red-bg);
+  border: 2px solid var(--red-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.logout-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.logout-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-stay {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-body);
+  background: transparent;
+  transition: background 0.15s;
+}
+
+.btn-stay:hover {
+  background: var(--surface-2);
+}
+
+.btn-logout-confirm {
+  flex: 1;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--red-dark);
+  transition: opacity 0.15s;
+}
+
+.btn-logout-confirm:hover {
+  opacity: 0.85;
+}
+
+/* ==========================
+   Responsive
+========================== */
+
+@media (max-width: 767px) {
+  .navbar-sidebar {
+    display: none;
+  }
+
+  .navbar-mobile {
+    display: flex;
+  }
+}

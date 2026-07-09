@@ -1,0 +1,294 @@
+/* Leaderboard.css */
+
+.leaderboard-page {
+    min-height: 100vh;
+    background: var(--bg);
+}
+
+.leaderboard-main {
+    margin-left: 224px;
+    padding: 32px;
+    padding-bottom: 32px;
+}
+
+.leaderboard-title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.8rem;
+    color: var(--text);
+    margin-bottom: 24px;
+}
+
+/* ===========================
+   Podium
+=========================== */
+
+.podium-wrap {
+    background: var(--sidebar);
+    border: 1px solid var(--border-dark);
+    border-radius: var(--radius-xl);
+
+    padding: 32px 24px;
+    margin-bottom: 24px;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+
+    gap: 16px;
+
+    min-height: 260px;
+}
+
+.podium-player {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 6px;
+
+    width: 120px;
+}
+
+.podium-badge {
+    font-size: 2rem;
+}
+
+.podium-name {
+    font-family: var(--font-display);
+    font-size: .8rem;
+    font-weight: 900;
+    color: var(--text);
+    text-align: center;
+}
+
+.podium-pts {
+    font-size: .72rem;
+    color: var(--text-muted);
+}
+
+.podium-block {
+    width: 100%;
+    border-radius: 10px 10px 0 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    border: 2px solid;
+}
+
+.podium-rank-num {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: rgba(255,255,255,.25);
+}
+
+/* ===========================
+   Table
+=========================== */
+
+.lb-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+}
+
+.lb-table-head {
+    display: grid;
+    grid-template-columns: 40px 1fr 100px 80px 80px;
+
+    padding: 12px 20px;
+
+    background: var(--surface-2);
+
+    border-bottom: 1px solid var(--border);
+
+    font-size: .7rem;
+    font-weight: 700;
+
+    text-transform: uppercase;
+    letter-spacing: .06em;
+
+    color: var(--text-muted);
+}
+
+.lb-table-head span:not(:first-child) {
+    text-align: right;
+}
+
+.lb-row {
+    display: grid;
+    grid-template-columns: 40px 1fr 100px 80px 80px;
+
+    padding: 14px 20px;
+
+    align-items: center;
+
+    border-top: 1px solid #1e2535;
+
+    font-size: .875rem;
+
+    transition: background .15s ease;
+}
+
+.lb-row:hover {
+    background: var(--surface-2);
+}
+
+.lb-row.is-you {
+    background: var(--green-bg);
+}
+
+.lb-row-rank {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--text-faint);
+}
+
+.lb-row-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--text);
+}
+
+.lb-row.is-you .lb-row-name {
+    color: var(--green);
+}
+
+.lb-you-tag {
+    margin-left: 6px;
+
+    color: var(--green);
+
+    font-size: .72rem;
+    font-weight: 500;
+}
+
+.lb-row-score {
+    text-align: right;
+
+    font-family: var(--font-display);
+    font-weight: 900;
+
+    color: var(--green);
+}
+
+.lb-row-quizzes {
+    text-align: right;
+    color: var(--text-muted);
+}
+
+.lb-row-avg {
+    text-align: right;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* ===========================
+   Tablet
+=========================== */
+
+@media (max-width:1024px){
+
+    .leaderboard-main{
+        margin-left:0;
+        padding:28px 24px 90px;
+    }
+
+    .podium-wrap{
+        padding:24px 16px;
+        gap:12px;
+    }
+
+    .podium-player{
+        width:100px;
+    }
+
+}
+
+/* ===========================
+   Mobile
+=========================== */
+
+@media (max-width:767px){
+
+    .leaderboard-main{
+        margin-left:0;
+        padding:20px 16px 90px;
+    }
+
+    .leaderboard-title{
+        font-size:1.6rem;
+    }
+
+    .podium-wrap{
+        gap:10px;
+        padding:20px 12px;
+        min-height:220px;
+    }
+
+    .podium-player{
+        width:82px;
+    }
+
+    .podium-badge{
+        font-size:1.6rem;
+    }
+
+    .podium-name{
+        font-size:.72rem;
+    }
+
+    .podium-pts{
+        font-size:.65rem;
+    }
+
+    .podium-rank-num{
+        font-size:2rem;
+    }
+
+    .lb-table-head,
+    .lb-row{
+        grid-template-columns:36px 1fr 80px 60px;
+    }
+
+    .lb-table-head span:last-child,
+    .lb-row-avg{
+        display:none;
+    }
+
+}
+
+/* ===========================
+   Small Phones
+=========================== */
+
+@media (max-width:420px){
+
+    .leaderboard-title{
+        font-size:1.4rem;
+    }
+
+    .podium-player{
+        width:70px;
+    }
+
+    .podium-rank-num{
+        font-size:1.7rem;
+    }
+
+    .lb-row{
+        padding:12px 14px;
+        font-size:.8rem;
+    }
+
+    .lb-table-head{
+        padding:10px 14px;
+        font-size:.65rem;
+    }
+
+}

@@ -1,0 +1,162 @@
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap");
+
+:root {
+
+    /* =====================================
+       Typography
+    ====================================== */
+
+    --font-display: "Nunito", sans-serif;
+    --font-body: "Inter", sans-serif;
+
+    /* =====================================
+       Backgrounds
+    ====================================== */
+
+    --bg: #0d1520;
+    --sidebar: #111e2e;
+    --surface: #1a2535;
+    --surface-2: #212f45;
+    --surface-3: #27364d;
+
+    /* =====================================
+       Primary Theme
+    ====================================== */
+
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #60a5fa;
+
+    /* =====================================
+       Text
+    ====================================== */
+
+    --text: #e2eaf5;
+    --text-body: #c5d4e8;
+    --text-muted: #7a8ea8;
+    --text-faint: #4a5a70;
+
+    /* =====================================
+       Borders
+    ====================================== */
+
+    --border: #2a3a50;
+    --border-dark: #1e2f45;
+
+    /* =====================================
+       Status Colours
+    ====================================== */
+
+    --green: #22c55e;
+    --orange: #f97316;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+    --yellow: #eab308;
+    --pink: #ec4899;
+
+    /* =====================================
+       Light Status Backgrounds
+    ====================================== */
+
+    --green-bg: rgba(34,197,94,.12);
+    --green-border: rgba(34,197,94,.28);
+
+    --blue-bg: rgba(37,99,235,.12);
+    --blue-border: rgba(37,99,235,.28);
+
+    --orange-bg: rgba(249,115,22,.12);
+    --orange-border: rgba(249,115,22,.28);
+
+    --red-bg: rgba(239,68,68,.12);
+    --red-border: rgba(239,68,68,.28);
+
+    --purple-bg: rgba(168,85,247,.12);
+    --purple-border: rgba(168,85,247,.28);
+
+    /* =====================================
+       Radius
+    ====================================== */
+
+    --radius-sm: 10px;
+    --radius-md: 16px;
+    --radius-lg: 20px;
+    --radius-xl: 24px;
+
+    /* =====================================
+       Shadows
+    ====================================== */
+
+    --shadow-card: 0 6px 18px rgba(0,0,0,.25);
+    --shadow-modal: 0 20px 45px rgba(0,0,0,.45);
+
+}
+
+/* =====================================
+   Reset
+====================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--text);
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+}
+
+button{
+    border:none;
+    outline:none;
+    cursor:pointer;
+    font-family:inherit;
+    transition:.25s ease;
+}
+
+input,
+textarea,
+select{
+    outline:none;
+    font-family:inherit;
+}
+
+a{
+    color:inherit;
+    text-decoration:none;
+}
+
+img{
+    max-width:100%;
+    display:block;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6{
+    font-family:var(--font-display);
+}
+
+.container{
+    width:min(1200px,92%);
+    margin:auto;
+}
+
+@media (max-width:768px){
+
+    .container{
+        width:94%;
+    }
+
+}
