@@ -38,6 +38,24 @@ const difficulties = [
   },
 ];
 
+const subjectNames = {
+  "javascript": "JavaScript",
+  "react": "React",
+  "html": "HTML",
+  "css": "CSS",
+  "mongodb": "MongoDB",
+  "nodejs": "Node.js",
+  "expressjs": "Express.js",
+  "python": "Python",
+  "java": "Java",
+  "c": "C++",
+  "c-1": "C#",
+  "sql": "SQL",
+  "data-structures": "Data Structures",
+  "algorithms": "Algorithms",
+  "other": "Other",
+}
+
 function formatSubject(slug) {
   return slug
     .split("-")
@@ -49,7 +67,7 @@ export default function Difficulty() {
   const navigate = useNavigate();
   const { subject = "" } = useParams();
 
-  const subjectName = formatSubject(subject);
+  const subjectName = subjectNames[subject] || formatSubject(subject);
 
   return (
     <div className="difficulty-page">

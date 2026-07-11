@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
 import QuizMenu from "./pages/QuizMenu";
 import DifficultySelection from "./pages/Difficulty";
 import Leaderboard from "./pages/Leaderboard";

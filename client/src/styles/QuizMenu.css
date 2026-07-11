@@ -32,11 +32,11 @@
 .subjects-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 16px;
+    gap: 20px;
 }
 
 .subject-card {
-    padding: 20px 16px;
+    padding: 28px 20px;
     border: 1px solid;
     border-radius: var(--radius-lg);
 
@@ -67,7 +67,7 @@
 
 .subject-name {
     font-family: var(--font-display);
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 800;
     line-height: 1.3;
 }

@@ -132,7 +132,7 @@
 
     color: var(--text-muted);
 
-    font-size: .8rem;
+    font-size: 0.875rem;
 
     line-height: 1.6;
 
@@ -154,7 +154,7 @@
 
 .difficulty-info-box {
 
-    background: var(--bg);
+    background: var(--surface-2);
 
     border: 1px solid;
 
@@ -248,7 +248,7 @@
 
     .difficulty-main {
 
-        padding: 20px 16px 90px;
+        padding: 20px 24px 90px;
 
     }
 
@@ -268,7 +268,7 @@
 
     .difficulty-card-body {
 
-        padding: 20px;
+        padding: 28px 24px;
 
     }
 
