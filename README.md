@@ -173,10 +173,10 @@ Below is the official breakdown of the contributors in Group 3 and their contrib
   - Authored the modular Express app config ([app.js](server/src/app.js)) with security middlewares (`helmet`, CORS) and route controllers. Handled JWT generation, bcrypt password hashing, and user authentication protection.
 * **Collins** (*Database Manager*):
   - Managed schemas for MongoDB collections ([User.js](server/src/models/User.js), [Quiz.js](server/src/models/Quiz.js), [Attempt.js](server/src/models/Attempt.js)). Optimized query performances via composite indexes and structured the expanded seed data array.
-* **Neeza** (*DevOps and Deployment Engineer*):
+* **Neeza** (*DevOps, Deployment & Full-Stack/PWA Integration Engineer*):
   - Structured development environment bindings (`.env`), set up deployment routes, and handled automated build validation scripts for client/server packages.
-* **Full-Stack & PWA Integration** (*Joint Team Effort*):
-  - Authored the service worker ([sw.js](client/public/sw.js)) for static asset caching, programmed local grading fallbacks ([offlineQuizzes.js](client/src/data/offlineQuizzes.js)), and created the background attempts synchronization manager ([offlineSync.js](client/src/services/offlineSync.js)).
+  - Authored the service worker ([sw.js](client/public/sw.js)) for static asset caching.
+  - Programmed local grading fallbacks ([offlineQuizzes.js](client/src/data/offlineQuizzes.js)) and created the background attempts synchronization manager ([offlineSync.js](client/src/services/offlineSync.js)).
 
 ---
 
