@@ -93,11 +93,13 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       });
-    }).catch(() => {
+    }).catch((err) => {
       // Offline fallback: render index.html if navigating to a page route
       if (event.request.mode === "navigate") {
         return caches.match("/index.html");
       }
+      // Propagate the network error so the browser knows the asset load failed
+      throw err;
     })
   );
 });
