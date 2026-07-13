@@ -94,9 +94,11 @@ self.addEventListener("fetch", (event) => {
         return response;
       });
     }).catch((err) => {
-      // Offline fallback: render index.html if navigating to a page route
+      // Offline fallback: render index.html or root page if navigating to a page route
       if (event.request.mode === "navigate") {
-        return caches.match("/index.html");
+        return caches.match("/index.html").then((response) => {
+          return response || caches.match("/");
+        });
       }
       // Propagate the network error so the browser knows the asset load failed
       throw err;
