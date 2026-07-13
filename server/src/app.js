@@ -14,6 +14,9 @@ const statsRoutes = require('./routes/statsRoutes');
 
 const app = express();
 
+// Enable trust proxy for express-rate-limit behind hosting proxies (Render, Heroku, etc.)
+app.set('trust proxy', 1);
+
 // --- Security & parsing middleware ---
 app.use(helmet()); // sets sensible security-related HTTP headers
 app.use(express.json({ limit: '1mb' })); // parse JSON bodies
