@@ -17,7 +17,9 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log("Service Worker: Caching core shell assets...");
-      return cache.addAll(ASSETS_TO_CACHE);
+      return cache.addAll(ASSETS_TO_CACHE).catch((err) => {
+        console.warn("Service Worker: Pre-caching completed with warnings (some assets may be fetched at runtime):", err);
+      });
     }).then(() => self.skipWaiting())
   );
 });
