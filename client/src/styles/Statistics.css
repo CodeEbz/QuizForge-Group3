@@ -1,0 +1,150 @@
+/* StatisticsPage.css */
+.statistics-page { min-height: 100vh; background: var(--bg); }
+
+.statistics-main {
+  margin-left: 224px;
+  padding: 32px;
+  padding-bottom: 32px;
+}
+
+.statistics-title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.8rem;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+
+/* Top stat cards */
+.stat-cards-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-mini-card {
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  border: 1px solid;
+}
+
+.stat-mini-icon { font-size: 1.2rem; margin-bottom: 8px; }
+
+.stat-mini-value {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.stat-mini-label { font-size: 0.72rem; color: var(--text-muted); }
+
+/* Subject bars */
+.subject-bars-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.subject-bars-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.subject-bar-row { margin-bottom: 16px; }
+.subject-bar-row:last-child { margin-bottom: 0; }
+
+.subject-bar-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.subject-bar-name {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-body);
+}
+
+.subject-bar-info { display: flex; gap: 12px; font-size: 0.72rem; color: var(--text-muted); }
+.subject-bar-avg  { font-weight: 700; }
+
+.subject-bar-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+
+.subject-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+/* Difficulty cards */
+.difficulty-breakdown-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.difficulty-breakdown-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.difficulty-breakdown-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+.diff-breakdown-box {
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  text-align: center;
+  border: 1px solid;
+}
+
+.diff-breakdown-count {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.diff-breakdown-label {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  margin-top: 4px;
+}
+
+.diff-breakdown-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+@media (max-width: 900px) {
+  .statistics-main { margin-left: 0; padding: 28px 22px 90px; }
+  .stat-cards-row { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 767px) {
+  .statistics-main { margin-left: 0; padding: 20px 16px 90px; }
+  .stat-cards-row { grid-template-columns: repeat(2, 1fr); }
+  .difficulty-breakdown-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .stat-cards-row { grid-template-columns: repeat(2, 1fr); }
+  .difficulty-breakdown-grid { grid-template-columns: 1fr; }
+  .subject-bar-info { flex-direction: column; gap: 2px; align-items: flex-end; }
+}

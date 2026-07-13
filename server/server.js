@@ -1,22 +1,21 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
-
-
-const connectDB = require("./config/db");
-const app = express();
-
-connectDB();
-
-app.use(cors());
-app.use(express.json());
-
-app.get("/", (req, res) => {
-  res.send("QuizForge API running...");
-});
+require('dotenv').config();
+const app = require('./src/app');
+const connectDB = require('./src/config/db');
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-})
+/**
+ * Connect to MongoDB first, then start listening.
+ * This avoids accepting traffic before the DB connection is ready.
+ */
+connectDB().then(() => {
+  const server = app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  });
+
+  // Gracefully handle unexpected promise rejections instead of crashing silently
+  process.on('unhandledRejection', (err) => {
+    console.error(`Unhandled Rejection: ${err.message}`);
+    server.close(() => process.exit(1));
+  });
+});

@@ -1,0 +1,181 @@
+/* ScorePage.css */
+
+.score-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: var(--bg);
+}
+
+.score-inner {
+  width: 100%;
+  max-width: 540px;
+}
+
+.score-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.score-card-stripe {
+  height: 6px;
+  background: var(--primary);
+}
+
+.score-card-body {
+  padding: 32px;
+  text-align: center;
+}
+
+.score-meta {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.score-pct {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.score-grade {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 28px;
+}
+
+.score-tally {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 28px;
+}
+
+.score-tally-item {
+  text-align: center;
+}
+
+.score-tally-num {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.score-tally-label {
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.score-tally-divider {
+  width: 1px;
+  height: 48px;
+  background: var(--border);
+}
+
+.score-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-see-answers {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-body);
+  background: transparent;
+}
+
+.btn-see-answers:hover {
+  background: var(--surface-2);
+}
+
+.btn-finish {
+  flex: 1;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.btn-finish:hover {
+  background: var(--primary-hover);
+}
+
+/* Answer Review */
+
+.answers-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+}
+
+.answers-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.answer-item {
+  border-radius: var(--radius-md);
+  padding: 16px;
+  border: 1px solid;
+  margin-bottom: 12px;
+}
+
+.answer-item.correct {
+  background: var(--green-bg);
+  border-color: var(--green-border);
+}
+
+.answer-item.wrong {
+  background: var(--red-bg);
+  border-color: var(--red-border);
+}
+
+.answer-q-num {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+.answer-q-text {
+  font-family: var(--font-display);
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+
+.answer-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  padding: 3px 0;
+}
+
+.answer-marker {
+  font-size: 0.8rem;
+}

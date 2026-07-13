@@ -112,7 +112,11 @@ export default function Navbar() {
 
               <button
                 className="btn-logout-confirm"
-                onClick={() => navigate("/auth")}
+                onClick={() => {
+                  localStorage.removeItem("quizforge_token");
+                  localStorage.removeItem("quizforge_user");
+                  navigate("/auth");
+                }}
               >
                 Yes, Log Out
               </button>
