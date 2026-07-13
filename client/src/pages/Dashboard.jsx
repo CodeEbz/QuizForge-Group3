@@ -75,6 +75,17 @@ export default function Dashboard() {
       await fetchDashboardData() // reload fresh data
     })
 
+    // Sync immediately on mount if online
+    if (navigator.onLine) {
+      syncOfflineAttempts().then((syncResult) => {
+        if (syncResult && syncResult.synced > 0) {
+          setSyncStatus(`Synced ${syncResult.synced} offline quizzes successfully!`)
+          setTimeout(() => setSyncStatus(""), 5000)
+          fetchDashboardData() // reload fresh data
+        }
+      }).catch(err => console.error("Error syncing offline attempts on mount:", err))
+    }
+
     fetchDashboardData()
 
     return () => {

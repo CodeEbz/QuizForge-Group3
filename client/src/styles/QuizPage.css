@@ -623,11 +623,36 @@
   }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 480px) {
+  .review-dashboard-card {
+    padding: 20px 16px;
+  }
   .review-grid {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .review-grid-cell {
+    padding: 10px 4px;
+  }
+  .review-cell-num {
+    font-size: 0.95rem;
+  }
+  .review-cell-state {
+    font-size: 0.55rem;
+  }
+  .review-legend {
+    flex-wrap: wrap;
+    gap: 10px 15px;
+    padding: 8px;
   }
   .review-actions {
     flex-direction: column-reverse;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .review-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
