@@ -198,8 +198,8 @@ export default function Dashboard() {
                 })
               )}
             </div>
-            <button className="btn-play-now" onClick={() => navigate("/quiz-menu")}>
-              Play Now
+            <button className="btn-play-now" onClick={() => navigate("/leaderboard")}>
+              View Full Standings
             </button>
           </div>
 

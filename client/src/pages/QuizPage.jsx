@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { useNavigate, useParams } from "react-router-dom"
-import { api } from "../services/api"
+import { api, isGuestMode } from "../services/api"
 import { getOfflineQuiz } from "../data/offlineQuizzes"
 import { queueOfflineAttempt } from "../services/offlineSync"
 import "../styles/QuizPage.css"
@@ -28,6 +28,8 @@ export default function QuizPage() {
   const subjectName = formatSubject(subject)
 
   const [loading, setLoading] = useState(true)
+  const [isGrading, setIsGrading] = useState(false)
+  const [showPreSubmitReview, setShowPreSubmitReview] = useState(false)
   const [quizId, setQuizId] = useState(null)
   const [questions, setQuestions] = useState([])
   const [current, setCurrent] = useState(0)
@@ -80,11 +82,18 @@ export default function QuizPage() {
 
         if (playRes && playRes.success) {
           setQuizId(activeQuizId)
-          setQuestions(playRes.data.questions)
-          setAnswers(Array(playRes.data.questions.length).fill(null))
-          setTaggedQuestions(Array(playRes.data.questions.length).fill(false))
+          
+          let loadedQuestions = playRes.data.questions;
+          const isGuest = isGuestMode() || (JSON.parse(localStorage.getItem("quizforge_user") || "{}").role === "guest");
+          if (isGuest) {
+            loadedQuestions = loadedQuestions.slice(0, 5);
+          }
+
+          setQuestions(loadedQuestions)
+          setAnswers(Array(loadedQuestions.length).fill(null))
+          setTaggedQuestions(Array(loadedQuestions.length).fill(false))
           if (playRes.data.timeLimitSeconds) {
-            setTimeLeft(playRes.data.timeLimitSeconds)
+            setTimeLeft(isGuest ? Math.min(playRes.data.timeLimitSeconds, 300) : playRes.data.timeLimitSeconds)
           }
         } else {
           loadLocalFallback()
@@ -100,9 +109,16 @@ export default function QuizPage() {
     const loadLocalFallback = () => {
       const offlineQuiz = getOfflineQuiz(subject, difficulty)
       setQuizId(offlineQuiz._id || "offline-id")
-      setQuestions(offlineQuiz.questions)
-      setAnswers(Array(offlineQuiz.questions.length).fill(null))
-      setTaggedQuestions(Array(offlineQuiz.questions.length).fill(false))
+      
+      let loadedQuestions = offlineQuiz.questions;
+      const isGuest = isGuestMode() || (JSON.parse(localStorage.getItem("quizforge_user") || "{}").role === "guest");
+      if (isGuest) {
+        loadedQuestions = loadedQuestions.slice(0, 5);
+      }
+
+      setQuestions(loadedQuestions)
+      setAnswers(Array(loadedQuestions.length).fill(null))
+      setTaggedQuestions(Array(loadedQuestions.length).fill(false))
       setIsOfflineAttempt(true)
       setLoading(false)
     }
@@ -113,6 +129,7 @@ export default function QuizPage() {
   // 2. Submit Attempt Handler
   const handleSubmit = useCallback(async () => {
     setLoading(true)
+    setIsGrading(true)
     const timeTakenSeconds = config.time - timeLeft
 
     if (!isOfflineAttempt) {
@@ -144,7 +161,8 @@ export default function QuizPage() {
             return {
               question: q.questionText,
               options: q.options.map(o => o.text),
-              correct: correctIdx >= 0 ? correctIdx : 0
+              correct: correctIdx >= 0 ? correctIdx : 0,
+              explanation: reviewRes.data.questions[idx].explanation || "No explanation provided for this question."
             }
           })
 
@@ -189,7 +207,8 @@ export default function QuizPage() {
       return {
         question: q.questionText,
         options: q.options.map(o => o.text),
-        correct: correctIdx
+        correct: correctIdx,
+        explanation: (offlineQuizData.questions[idx] && offlineQuizData.questions[idx].explanation) || "Verified locally by the offline database."
       }
     })
 
@@ -234,9 +253,34 @@ export default function QuizPage() {
   }, [timeLeft, handleSubmit, loading])
 
   if (loading) {
+    const subjectLower = (subject || "").toLowerCase();
+    let icon = "✦";
+    if (subjectLower.includes("javascript")) icon = "⚡";
+    else if (subjectLower.includes("react")) icon = "⚛";
+    else if (subjectLower.includes("html")) icon = "🌐";
+    else if (subjectLower.includes("css")) icon = "🎨";
+    else if (subjectLower.includes("mongodb")) icon = "🍃";
+    else if (subjectLower.includes("node")) icon = "🟢";
+    else if (subjectLower.includes("python")) icon = "🐍";
+    else if (subjectLower.includes("java")) icon = "☕";
+    else if (subjectLower.includes("cpp") || subjectLower.includes("c++")) icon = "⚙";
+    else if (subjectLower.includes("algorithms")) icon = "🔄";
+    else if (subjectLower.includes("database") || subjectLower.includes("sql")) icon = "🗄";
+    
+    const loaderTitle = isGrading ? "Analyzing Your Performance" : "Preparing Your Quiz Environment";
+    const loaderText = isGrading 
+      ? "Grading your answers and generating AI explanations..." 
+      : `Fetching high-quality questions on ${subjectName || subject}...`;
+
     return (
-      <div className="quiz-page" style={{ justifyContent: "center", alignItems: "center" }}>
-        <p className="no-activity">Preparing your quiz environment...</p>
+      <div className="quiz-page" style={{ justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <div className="quiz-loader-card">
+          <div className="quiz-loader-icon-wrap">
+            <span className="quiz-loader-icon">{icon}</span>
+          </div>
+          <h3 className="quiz-loader-title">{loaderTitle}</h3>
+          <p className="quiz-loader-text">{loaderText}</p>
+        </div>
       </div>
     )
   }
@@ -286,6 +330,86 @@ export default function QuizPage() {
     const nextTags = [...taggedQuestions]
     nextTags[current] = !nextTags[current]
     setTaggedQuestions(nextTags)
+  }
+
+  if (showPreSubmitReview) {
+    return (
+      <div className="quiz-page">
+        <div className="quiz-topbar">
+          <div className="quiz-topbar-info">
+            <div className="quiz-topbar-sub">{subjectName} Quiz Review</div>
+            <div className="quiz-topbar-label" style={{ color: config.color }}>{config.label}</div>
+          </div>
+          <button className="btn-cancel-quiz" onClick={() => setShowCancel(true)}>Cancel</button>
+        </div>
+
+        <div className="quiz-body" style={{ alignItems: "center" }}>
+          <div className="quiz-content" style={{ maxWidth: "600px" }}>
+            <div className="review-dashboard-card">
+              <h2 className="review-title">Review Your Answers</h2>
+              <p className="review-subtitle">Click on any question to return and edit your answer before submitting.</p>
+
+              <div className="review-grid">
+                {questions.map((q, idx) => {
+                  const ans = answers[idx]
+                  const tagged = taggedQuestions[idx]
+                  let stateClass = "unanswered"
+                  let stateLabel = "Unanswered"
+                  
+                  if (tagged) {
+                    stateClass = "flagged"
+                    stateLabel = "Flagged"
+                  } else if (ans) {
+                    stateClass = "answered"
+                    stateLabel = "Answered"
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      className={`review-grid-cell ${stateClass}`}
+                      onClick={() => { setShowPreSubmitReview(false); setCurrent(idx); }}
+                    >
+                      <span className="review-cell-num">{idx + 1}</span>
+                      <span className="review-cell-state">{tagged ? "🚩" : stateLabel}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="review-legend">
+                <div className="legend-item"><span className="legend-dot answered"></span> Answered</div>
+                <div className="legend-item"><span className="legend-dot flagged">🚩</span> Flagged</div>
+                <div className="legend-item"><span className="legend-dot unanswered"></span> Unanswered</div>
+              </div>
+
+              <div className="review-actions">
+                <button className="btn-back-to-quiz" onClick={() => setShowPreSubmitReview(false)}>
+                  ← Back to Quiz
+                </button>
+                <button className="btn-confirm-submit" onClick={handleSubmit}>
+                  Submit Quiz for Grading
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Cancel modal */}
+        {showCancel && (
+          <div className="cancel-overlay">
+            <div className="cancel-modal">
+              <h3 className="cancel-modal-title">Cancel Quiz?</h3>
+              <p className="cancel-modal-text">Your progress will be lost. This cannot be undone.</p>
+              <div className="cancel-modal-actions">
+                <button className="btn-keep-going" onClick={() => setShowCancel(false)}>Keep Going</button>
+                <button className="btn-yes-cancel" onClick={() => navigate("/quiz-menu")}>Yes, Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -351,7 +475,7 @@ export default function QuizPage() {
           <div className="quiz-nav">
             <button className="btn-quiz-prev" onClick={goPrev} disabled={current === 0}>← Previous</button>
             <button className="btn-quiz-next" onClick={goNext} disabled={current === questions.length - 1}>Next →</button>
-            <button className="btn-quiz-submit-action" onClick={handleSubmit}>Submit Quiz</button>
+            <button className="btn-quiz-submit-action" onClick={() => setShowPreSubmitReview(true)}>Submit Quiz</button>
           </div>
         </div>
       </div>

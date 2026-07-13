@@ -112,6 +112,14 @@ export default function ScorePage() {
                       </span>
                     </div>
                   ))}
+
+                  {/* AI Explanation block */}
+                  <div className="answer-explanation" style={{ marginTop: '12px', padding: '12px', background: 'var(--surface-2)', borderRadius: 'var(--radius-sm)', fontSize: '0.8rem', borderLeft: '3px solid var(--primary)', textAlign: 'left' }}>
+                    <p style={{ fontWeight: 800, color: 'var(--primary)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '4px', margin: 0 }}>
+                      <span>💡</span> Quick AI Explanation
+                    </p>
+                    <p style={{ color: 'var(--text-muted)', lineHeight: '1.45', margin: '4px 0 0 0' }}>{q.explanation || "This answer is correct based on industry standard specifications."}</p>
+                  </div>
                 </div>
               )
             })}

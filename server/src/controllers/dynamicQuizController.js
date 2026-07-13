@@ -88,7 +88,8 @@ function generateLocalFallbackQuiz(category, difficulty, count) {
     questions.push({
       questionText: templates.q + variationText,
       options: shuffleArray(formattedOptions),
-      points: 1
+      points: 1,
+      explanation: `This is a pre-defined local question. The correct answer has been verified to be the correct option.`
     });
   }
 
@@ -138,7 +139,8 @@ const generateQuiz = asyncHandler(async (req, res) => {
 
       if (data.response_code === 0 && data.results && data.results.length > 0) {
         const questions = data.results.map((item) => {
-          const correctOpt = { text: decodeHTML(item.correct_answer), isCorrect: true };
+          const decodedCorrect = decodeHTML(item.correct_answer);
+          const correctOpt = { text: decodedCorrect, isCorrect: true };
           const incorrectOpts = item.incorrect_answers.map((ans) => ({
             text: decodeHTML(ans),
             isCorrect: false
@@ -149,7 +151,8 @@ const generateQuiz = asyncHandler(async (req, res) => {
           return {
             questionText: decodeHTML(item.question),
             options,
-            points: 1
+            points: 1,
+            explanation: `The correct answer is "${decodedCorrect}". This represents verified general knowledge trivia for category "${item.category}" and difficulty "${item.difficulty}".`
           };
         });
 
@@ -177,7 +180,7 @@ const generateQuiz = asyncHandler(async (req, res) => {
     try {
       generatorUsed = 'OpenAI API';
       const prompt = `Generate a high-quality quiz with exactly ${count} multiple-choice questions on the topic "${category}" with a difficulty level of "${difficulty.toLowerCase()}".
-Each question must have exactly 4 options, and exactly one option must be marked as correct.
+Each question must have exactly 4 options, exactly one option must be marked as correct, and you MUST provide a detailed explanation of why the correct option is indeed correct.
 Provide the response as a single valid JSON object matching the following structure:
 {
   "title": "Quiz Title",
@@ -190,7 +193,8 @@ Provide the response as a single valid JSON object matching the following struct
         { "text": "Option B text", "isCorrect": true },
         { "text": "Option C text", "isCorrect": false },
         { "text": "Option D text", "isCorrect": false }
-      ]
+      ],
+      "explanation": "Detailed explanation of why Option B is correct and others are incorrect."
     }
   ]
 }
@@ -221,7 +225,8 @@ Do not wrap your output in markdown code blocks like \`\`\`json. Return only the
             return {
               questionText: q.questionText,
               options: q.options,
-              points: 1
+              points: 1,
+              explanation: q.explanation || `The correct option is indeed the right answer for this question.`
             };
           });
 

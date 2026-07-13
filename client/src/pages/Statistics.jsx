@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom"
 import Navbar from "../components/Navbar"
-import { api } from "../services/api"
+import { api, isGuestMode } from "../services/api"
 import "../styles/Statistics.css"
 
 export default function Statistics() {
+  const navigate = useNavigate()
   const [statsData, setStatsData] = useState({
     totalAttempts: 0,
     totalScore: 0,
@@ -105,10 +107,32 @@ export default function Statistics() {
     { label: "Hard",   count: difficultyMap.hard, color: "var(--orange)", bg: "var(--orange-bg)", border: "var(--orange-border)" },
   ]
 
+  if (isGuestMode()) {
+    return (
+      <div className="statistics-page">
+        <Navbar />
+        <main className="statistics-main" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '100px 20px' }}>
+          <button className="btn-back" onClick={() => navigate("/dashboard")} style={{ alignSelf: 'flex-start', marginBottom: '24px' }}>← Back to Dashboard</button>
+          <div className="guest-lock-card">
+            <span className="guest-lock-icon">📊</span>
+            <h2 className="guest-lock-title">Statistics Locked</h2>
+            <p className="guest-lock-desc">
+              Track your quiz history, average score, success trends, and analytics by creating a free account.
+            </p>
+            <button className="btn-guest-register" onClick={() => navigate("/auth")}>
+              Sign Up / Log In
+            </button>
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="statistics-page">
       <Navbar />
       <main className="statistics-main">
+        <button className="btn-back" onClick={() => navigate("/dashboard")}>← Back to Dashboard</button>
         <h1 className="statistics-title">Statistics</h1>
 
         {loading ? (

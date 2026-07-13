@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
-import { api } from "../services/api";
+import { api, isGuestMode } from "../services/api";
 import "../styles/Leaderboard.css";
 
 const podiumOrder = [
@@ -28,6 +29,7 @@ const podiumOrder = [
 ];
 
 export default function Leaderboard() {
+  const navigate = useNavigate();
   const [players, setPlayers] = useState([]);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -66,11 +68,33 @@ export default function Leaderboard() {
     fetchLeaderboard();
   }, []);
 
+  if (isGuestMode()) {
+    return (
+      <div className="leaderboard-page">
+        <Navbar />
+        <main className="leaderboard-main" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '100px 20px' }}>
+          <button className="btn-back" onClick={() => navigate("/dashboard")} style={{ alignSelf: 'flex-start', marginBottom: '24px' }}>← Back to Dashboard</button>
+          <div className="guest-lock-card">
+            <span className="guest-lock-icon">🔒</span>
+            <h2 className="guest-lock-title">Leaderboard Locked</h2>
+            <p className="guest-lock-desc">
+              Leaderboard standings are only available to registered QuizForge players. Create an account to compete globally and see where you stand!
+            </p>
+            <button className="btn-guest-register" onClick={() => navigate("/auth")}>
+              Sign Up / Log In
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="leaderboard-page">
       <Navbar />
 
       <main className="leaderboard-main">
+        <button className="btn-back" onClick={() => navigate("/dashboard")}>← Back to Dashboard</button>
         <h1 className="leaderboard-title">Leaderboard</h1>
 
         {loading ? (

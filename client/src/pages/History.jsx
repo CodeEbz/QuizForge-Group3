@@ -61,7 +61,8 @@ export default function HistoryPage() {
           return {
             question: q.questionText,
             options: q.options.map(o => o.text),
-            correct: correctIdx >= 0 ? correctIdx : 0
+            correct: correctIdx >= 0 ? correctIdx : 0,
+            explanation: q.explanation || "No explanation provided for this question."
           }
         })
 
@@ -108,6 +109,7 @@ export default function HistoryPage() {
     <div className="history-page">
       <Navbar />
       <main className="history-main">
+        <button className="btn-back" onClick={() => navigate("/dashboard")}>← Back to Dashboard</button>
         <h1 className="history-title">Quiz History</h1>
         <p className="history-sub">Track your learning journey and review past answers</p>
 

@@ -24,6 +24,7 @@ const questionSchema = new mongoose.Schema(
       },
     },
     points: { type: Number, default: 1, min: 1 },
+    explanation: { type: String, default: '' },
   },
   { _id: true }
 );
