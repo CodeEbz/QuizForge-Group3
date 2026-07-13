@@ -87,6 +87,7 @@ export default function QuizPage() {
       setQuestions(offlineQuiz.questions)
       setAnswers(Array(offlineQuiz.questions.length).fill(null))
       setIsOfflineAttempt(true)
+      setLoading(false)
     }
 
     loadQuiz()
