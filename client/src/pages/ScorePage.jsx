@@ -93,7 +93,14 @@ export default function ScorePage() {
               const isCorrect = userAns === q.correct
               return (
                 <div key={i} className={`answer-item ${isCorrect ? "correct" : "wrong"}`}>
-                  <p className="answer-q-num">Q{i + 1}</p>
+                  <div className="answer-q-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <p className="answer-q-num" style={{ marginBottom: 0 }}>Q{i + 1}</p>
+                    {state.tagged && state.tagged[i] && (
+                      <span className="review-flag-badge" style={{ fontSize: '0.75rem', background: 'var(--orange-bg)', color: 'var(--orange)', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold', border: '1px solid var(--orange-border)' }}>
+                        🚩 Flagged
+                      </span>
+                    )}
+                  </div>
                   <p className="answer-q-text">{q.question}</p>
                   {q.options.map((opt, j) => (
                     <div key={j} className="answer-option">

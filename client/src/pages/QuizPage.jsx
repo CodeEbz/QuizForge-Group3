@@ -36,6 +36,7 @@ export default function QuizPage() {
   const [timeLeft, setTimeLeft] = useState(config.time)
   const [showCancel, setShowCancel] = useState(false)
   const [isOfflineAttempt, setIsOfflineAttempt] = useState(!navigator.onLine)
+  const [taggedQuestions, setTaggedQuestions] = useState([])
 
   // 1. Fetch Quiz on Mount
   useEffect(() => {
@@ -49,28 +50,43 @@ export default function QuizPage() {
       }
 
       try {
-        // Query quiz matching category and difficulty from DB
-        const quizzesRes = await api.getQuizzes({ 
-          category: subject.toLowerCase(), 
-          difficulty: difficulty.toLowerCase() 
-        })
+        let playRes = null;
+        let activeQuizId = null;
 
-        if (quizzesRes.success && quizzesRes.data.length > 0) {
-          const quizMeta = quizzesRes.data[0]
-          setQuizId(quizMeta._id)
-          
-          // Get questions (excluding answer keys)
-          const playRes = await api.getQuizForPlay(quizMeta._id)
-          if (playRes.success) {
-            setQuestions(playRes.data.questions)
-            setAnswers(Array(playRes.data.questions.length).fill(null))
-            if (playRes.data.timeLimitSeconds) {
-              setTimeLeft(playRes.data.timeLimitSeconds)
-            }
+        // If the subject is 'other' or maps to a dynamic type, we use api.generateQuiz
+        // Wait, does it check if it is other or custom? Yes, if it is not in the predefined list, or if the user is online,
+        // we can generate it dynamically to ensure correct question counts (20, 30, 50)!
+        const isStandardPreseeded = ["javascript", "react", "html", "css"].includes(subject.toLowerCase());
+        
+        // If we are online, generate a dynamic quiz of exact counts!
+        let queryCategory = subject.toLowerCase();
+        let triviaId = null;
+        if (queryCategory.startsWith("other-")) {
+          const parts = queryCategory.split("-");
+          queryCategory = "other";
+          triviaId = parseInt(parts[1], 10);
+        }
+
+        const genRes = await api.generateQuiz({
+          category: queryCategory,
+          difficulty: difficulty.toLowerCase(),
+          triviaCategoryId: triviaId
+        });
+
+        if (genRes.success) {
+          activeQuizId = genRes.data._id;
+          playRes = { success: true, data: genRes.data };
+        }
+
+        if (playRes && playRes.success) {
+          setQuizId(activeQuizId)
+          setQuestions(playRes.data.questions)
+          setAnswers(Array(playRes.data.questions.length).fill(null))
+          setTaggedQuestions(Array(playRes.data.questions.length).fill(false))
+          if (playRes.data.timeLimitSeconds) {
+            setTimeLeft(playRes.data.timeLimitSeconds)
           }
         } else {
-          // No matching quiz found in DB, fallback to local quiz questions
-          console.warn("No quiz found in DB, loading local offline fallback.")
           loadLocalFallback()
         }
       } catch (err) {
@@ -86,6 +102,7 @@ export default function QuizPage() {
       setQuizId(offlineQuiz._id || "offline-id")
       setQuestions(offlineQuiz.questions)
       setAnswers(Array(offlineQuiz.questions.length).fill(null))
+      setTaggedQuestions(Array(offlineQuiz.questions.length).fill(false))
       setIsOfflineAttempt(true)
       setLoading(false)
     }
@@ -105,7 +122,7 @@ export default function QuizPage() {
           const q = questions[idx]
           return {
             questionId: q._id,
-            selectedOptionId: ans ? ans.selectedOptionId : q.options[0]._id // fallback to first option if skipped
+            selectedOptionId: ans ? ans.selectedOptionId : null // submit null for skipped/unanswered questions
           }
         })
 
@@ -139,7 +156,8 @@ export default function QuizPage() {
               difficulty: config.label,
               answers: answers.map(a => a ? a.selectedOptionIndex : -1),
               questions: reviewQuestions,
-              isOffline: false
+              isOffline: false,
+              tagged: taggedQuestions
             }
           })
         }
@@ -151,7 +169,7 @@ export default function QuizPage() {
       // Local grading for offline attempt
       submitOfflineLocal(timeTakenSeconds)
     }
-  }, [answers, questions, quizId, isOfflineAttempt, timeLeft, config, subjectName, navigate])
+  }, [answers, questions, quizId, isOfflineAttempt, timeLeft, config, subjectName, navigate, taggedQuestions])
 
   const submitOfflineLocal = (timeTakenSeconds) => {
     // Grade locally
@@ -185,7 +203,7 @@ export default function QuizPage() {
       timeTakenSeconds,
       answers: answers.map((ans, idx) => ({
         questionId: questions[idx]._id,
-        selectedOptionId: ans ? ans.selectedOptionId : questions[idx].options[0]._id,
+        selectedOptionId: ans ? ans.selectedOptionId : null,
         selectedOptionIndex: ans ? ans.selectedOptionIndex : -1
       })),
       createdAt: new Date().toISOString()
@@ -201,7 +219,8 @@ export default function QuizPage() {
         difficulty: config.label,
         answers: answers.map(a => a ? a.selectedOptionIndex : -1),
         questions: gradedQuestions,
-        isOffline: true
+        isOffline: true,
+        tagged: taggedQuestions
       }
     })
   }
@@ -263,6 +282,12 @@ export default function QuizPage() {
     }
   }
 
+  function toggleTag() {
+    const nextTags = [...taggedQuestions]
+    nextTags[current] = !nextTags[current]
+    setTaggedQuestions(nextTags)
+  }
+
   return (
     <div className="quiz-page">
 
@@ -286,7 +311,6 @@ export default function QuizPage() {
 
         <div className="quiz-topbar-actions">
           <button className="btn-cancel-quiz" onClick={() => setShowCancel(true)}>Cancel</button>
-          <button className="btn-submit-quiz" onClick={handleSubmit}>Submit</button>
         </div>
       </div>
 
@@ -299,7 +323,15 @@ export default function QuizPage() {
       <div className="quiz-body">
         <div className="quiz-content">
           <div className="quiz-question-card">
-            <p className="quiz-q-label">Question {current + 1}</p>
+            <div className="quiz-q-header">
+              <span className="quiz-q-label">Question {current + 1} of {questions.length}</span>
+              <button 
+                className={`btn-tag-question${taggedQuestions[current] ? " active" : ""}`}
+                onClick={toggleTag}
+              >
+                {taggedQuestions[current] ? "🚩 Flagged" : "🏳️ Flag for Review"}
+              </button>
+            </div>
             <h2 className="quiz-q-text">{q.questionText}</h2>
           </div>
 
@@ -318,10 +350,8 @@ export default function QuizPage() {
 
           <div className="quiz-nav">
             <button className="btn-quiz-prev" onClick={goPrev} disabled={current === 0}>← Previous</button>
-            {current < questions.length - 1
-              ? <button className="btn-quiz-next" onClick={goNext}>Next →</button>
-              : <button className="btn-quiz-final" onClick={handleSubmit}>Submit Quiz</button>
-            }
+            <button className="btn-quiz-next" onClick={goNext} disabled={current === questions.length - 1}>Next →</button>
+            <button className="btn-quiz-submit-action" onClick={handleSubmit}>Submit Quiz</button>
           </div>
         </div>
       </div>

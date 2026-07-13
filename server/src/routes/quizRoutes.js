@@ -9,12 +9,16 @@ const {
   updateQuiz,
   deleteQuiz,
 } = require('../controllers/quizController');
+const { generateQuiz } = require('../controllers/dynamicQuizController');
 const { createQuizValidator } = require('../validators/quizValidators');
 const validate = require('../middleware/validateMiddleware');
 const { protect } = require('../middleware/authMiddleware');
 
 // GET /api/quizzes - public list (metadata only)
 router.get('/', getQuizzes);
+
+// POST /api/quizzes/generate - generate a quiz dynamically (public with optional auth)
+router.post('/generate', generateQuiz);
 
 // POST /api/quizzes - create a quiz (must be logged in)
 router.post('/', protect, createQuizValidator, validate, createQuiz);

@@ -103,14 +103,36 @@ export async function syncOfflineAttempts() {
         }
       }
 
+      // Fetch the actual online quiz details to translate offline option indices to database ObjectIDs
+      const playRes = await api.getQuizForPlay(quizId);
+      if (!playRes || !playRes.success || !playRes.data || !playRes.data.questions) {
+        throw new Error(`Could not fetch online quiz structure for quizId ${quizId}`);
+      }
+      const dbQuestions = playRes.data.questions;
+
       // Map answers to the format expected by the backend: [{ questionId, selectedOptionId }]
       const formattedAnswers = attempt.answers.map((answer, index) => {
-        // Find corresponding question in DB quiz if possible, or use standard indexing
+        const dbQ = dbQuestions[index];
+        if (!dbQ) return null;
+        
+        if (answer.selectedOptionIndex === -1 || !answer.selectedOptionId) {
+          return {
+            questionId: dbQ._id,
+            selectedOptionId: null
+          };
+        }
+        
+        // Find matching option by index
+        let dbOpt = dbQ.options[answer.selectedOptionIndex];
+        if (!dbOpt) {
+          dbOpt = dbQ.options[0]; // fallback
+        }
+        
         return {
-          questionId: answer.questionId,
-          selectedOptionId: answer.selectedOptionId
+          questionId: dbQ._id,
+          selectedOptionId: dbOpt ? dbOpt._id : null
         };
-      });
+      }).filter(Boolean);
 
       await api.submitAttempt({
         quizId,

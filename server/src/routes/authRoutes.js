@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { register, login, getMe } = require('../controllers/authController');
+const { register, login, getMe, forgotPassword } = require('../controllers/authController');
 const { registerValidator, loginValidator } = require('../validators/authValidators');
 const validate = require('../middleware/validateMiddleware');
 const { protect } = require('../middleware/authMiddleware');
@@ -11,6 +11,9 @@ router.post('/register', registerValidator, validate, register);
 
 // POST /api/auth/login
 router.post('/login', loginValidator, validate, login);
+
+// POST /api/auth/forgot-password
+router.post('/forgot-password', forgotPassword);
 
 // GET /api/auth/me
 router.get('/me', protect, getMe);

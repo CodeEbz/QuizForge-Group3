@@ -74,4 +74,31 @@ const getMe = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { register, login, getMe };
+/**
+ * @route   POST /api/auth/forgot-password
+ * @desc    Simulated forgot password email dispatch
+ * @access  Public
+ */
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    throw new ApiError(400, 'Email is required');
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(200).json({
+      success: true,
+      message: 'If an account exists for this email, you will receive password reset instructions shortly.'
+    });
+  }
+
+  console.log(`[PASSWORD RESET SIMULATION] Reset requested for user: ${user.name} (${user.email})`);
+
+  res.status(200).json({
+    success: true,
+    message: 'If an account exists for this email, you will receive password reset instructions shortly. (Reset simulated successfully)'
+  });
+});
+
+module.exports = { register, login, getMe, forgotPassword };

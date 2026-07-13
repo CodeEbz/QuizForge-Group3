@@ -8,11 +8,13 @@ import ScorePage from "./pages/ScorePage";
 import Leaderboard from "./pages/Leaderboard";
 import Statistics from "./pages/Statistics";
 import ProfilePage from "./pages/Profile";
-
+import HistoryPage from "./pages/History";
+import ScrollToTop from "./components/ScrollToTop";
 
 function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route path="/" element={<Navigate to="/auth" />} />
         <Route path="/auth" element={<AuthPage />} />
@@ -24,6 +26,7 @@ function App() {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/statistics" element={<Statistics />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/history" element={<HistoryPage />} />
       </Routes>
     </BrowserRouter>
   );

@@ -78,10 +78,6 @@ export default function ProfilePage() {
                 )}
               </div>
 
-              <div>
-                <label className="profile-field-label">Password</label>
-                <div className="profile-field-display">••••••••••</div>
-              </div>
             </div>
 
             <button

@@ -6,9 +6,8 @@
 }
 
 .difficulty-main {
-    margin-left: 224px;
-    padding: 32px;
-    padding-bottom: 32px;
+    margin-left: 0;
+    padding: 88px 32px 32px;
 }
 
 .btn-back {
@@ -234,7 +233,7 @@
 
         margin-left: 0;
 
-        padding: 28px 22px 90px;
+        padding: 80px 22px 32px;
 
     }
 
@@ -248,7 +247,7 @@
 
     .difficulty-main {
 
-        padding: 20px 24px 90px;
+        padding: 80px 24px 32px;
 
     }
 

@@ -5,7 +5,7 @@ import { api } from "../services/api"
 import "../styles/Auth.css"
 
 export default function AuthPage() {
-  const [mode, setMode] = useState("login")
+  const [mode, setMode] = useState("login") // login, signup, forgot
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
@@ -50,6 +50,20 @@ export default function AuthPage() {
     navigate("/dashboard")
   }
 
+  const handleForgotPasswordSubmit = async (email) => {
+    setError("")
+    setLoading(true)
+    try {
+      const res = await api.forgotPassword(email)
+      alert(res.message || "Simulated password reset instructions sent.")
+      setMode("login")
+    } catch (err) {
+      setError(err.message || "Failed to request password reset.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="auth-page">
       <div className="auth-glow auth-glow--green" />
@@ -63,20 +77,28 @@ export default function AuthPage() {
         <p className="auth-tagline">Forge your knowledge, Conquer every quiz</p>
 
         <div className="auth-card">
-          <div className="auth-tabs">
-            <button
-              className={`auth-tab${mode === "login" ? " active" : ""}`}
-              onClick={() => { setMode("login"); setError(""); }}
-            >
-              Log In
-            </button>
-            <button
-              className={`auth-tab${mode === "signup" ? " active" : ""}`}
-              onClick={() => { setMode("signup"); setError(""); }}
-            >
-              Sign Up
-            </button>
-          </div>
+          {mode === "forgot" ? (
+            <div className="auth-tabs">
+              <button className="auth-tab active" style={{ cursor: "default" }}>
+                Reset Password
+              </button>
+            </div>
+          ) : (
+            <div className="auth-tabs">
+              <button
+                className={`auth-tab${mode === "login" ? " active" : ""}`}
+                onClick={() => { setMode("login"); setError(""); }}
+              >
+                Log In
+              </button>
+              <button
+                className={`auth-tab${mode === "signup" ? " active" : ""}`}
+                onClick={() => { setMode("signup"); setError(""); }}
+              >
+                Sign Up
+              </button>
+            </div>
+          )}
 
           {error && <div className="auth-error-msg">{error}</div>}
 
@@ -85,11 +107,18 @@ export default function AuthPage() {
               <LoginForm 
                 onSubmit={handleLoginSubmit} 
                 onGuest={handleGuestLogin} 
+                onForgotTrigger={() => { setMode("forgot"); setError(""); }}
+                loading={loading}
+              />
+            ) : mode === "signup" ? (
+              <SignupForm 
+                onSubmit={handleSignupSubmit} 
                 loading={loading}
               />
             ) : (
-              <SignupForm 
-                onSubmit={handleSignupSubmit} 
+              <ForgotPasswordForm 
+                onSubmit={handleForgotPasswordSubmit}
+                onBack={() => { setMode("login"); setError(""); }}
                 loading={loading}
               />
             )}
@@ -138,7 +167,7 @@ function Field({ label, type, placeholder, value, onChange, required = true }) {
   )
 }
 
-function LoginForm({ onSubmit, onGuest, loading }) {
+function LoginForm({ onSubmit, onGuest, onForgotTrigger, loading }) {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
@@ -163,6 +192,11 @@ function LoginForm({ onSubmit, onGuest, loading }) {
         value={password}
         onChange={e => setPassword(e.target.value)}
       />
+      <div className="forgot-password-link-wrap">
+        <button type="button" className="forgot-password-link" onClick={onForgotTrigger}>
+          Forgot Password?
+        </button>
+      </div>
       <button type="submit" className="btn-submit" disabled={loading}>
         {loading ? "Logging In..." : "Log In to QuizForge"}
       </button>
@@ -216,6 +250,36 @@ function SignupForm({ onSubmit, loading }) {
       />
       <button type="submit" className="btn-submit" disabled={loading}>
         {loading ? "Creating Account..." : "Create My Account"}
+      </button>
+    </form>
+  )
+}
+
+function ForgotPasswordForm({ onSubmit, onBack, loading }) {
+  const [email, setEmail] = useState("")
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    onSubmit(email)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "16px", lineHeight: "1.4" }}>
+        Enter your email address below and we'll send you instructions to reset your password.
+      </p>
+      <Field 
+        label="Email Address" 
+        type="email" 
+        placeholder="you@example.com" 
+        value={email}
+        onChange={e => setEmail(e.target.value)}
+      />
+      <button type="submit" className="btn-submit" disabled={loading}>
+        {loading ? "Sending..." : "Send Reset Link"}
+      </button>
+      <button type="button" className="btn-back-login" onClick={onBack} disabled={loading}>
+        Back to Log In
       </button>
     </form>
   )

@@ -168,5 +168,50 @@ export const api = {
       };
     }
     return request(`/leaderboard?limit=${limit}`);
+  },
+
+  /**
+   * Request password reset (simulated)
+   */
+  async forgotPassword(email) {
+    return request("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email })
+    });
+  },
+
+  /**
+   * Get user's own quiz attempts history log
+   */
+  async getMyAttempts(page = 1, limit = 10) {
+    if (isGuestMode()) {
+      const offlineStats = JSON.parse(localStorage.getItem("quizforge_offline_stats")) || { recentAttempts: [] };
+      return { success: true, data: offlineStats.recentAttempts };
+    }
+    return request(`/attempts/my?page=${page}&limit=${limit}`);
+  },
+
+  /**
+   * Get single attempt details
+   */
+  async getAttemptById(id) {
+    if (isGuestMode()) {
+      return { success: true, data: null };
+    }
+    return request(`/attempts/${id}`);
+  },
+
+  /**
+   * Generate a dynamic quiz from OpenAI or Open Trivia APIs
+   */
+  async generateQuiz({ category, difficulty, triviaCategoryId }) {
+    if (isGuestMode()) {
+      // Offline fallback: load local quiz immediately
+      throw new Error("Guest mode is offline-first fallback");
+    }
+    return request("/quizzes/generate", {
+      method: "POST",
+      body: JSON.stringify({ category, difficulty, triviaCategoryId })
+    });
   }
 };

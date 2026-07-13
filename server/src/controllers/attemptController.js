@@ -34,6 +34,14 @@ const submitAttempt = asyncHandler(async (req, res) => {
       throw new ApiError(400, `Question ${questionId} does not belong to this quiz`);
     }
 
+    if (!selectedOptionId) {
+      return {
+        question: question._id,
+        selectedOption: null,
+        isCorrect: false,
+      };
+    }
+
     const selectedOption = question.options.find(
       (o) => o._id.toString() === selectedOptionId
     );

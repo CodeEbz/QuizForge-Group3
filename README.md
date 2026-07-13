@@ -155,8 +155,8 @@ Below is the official breakdown of the contributors in Group 3 and their contrib
   - Directed team communications, scheduled project checkpoints, aligned frontend/backend milestones, and supervised the end-to-end integration and delivery process.
 
 ### 💻 Frontend Development Team
-* **Ali** (*Auth page*):
-  - Programmed the registration and login interface ([Auth.jsx](client/src/pages/Auth.jsx)). Structured form state binds and integrated the client with backend `/api/auth` endpoints.
+* **Ali & Queen** (*Auth page*):
+  - Programmed the registration and login interface ([Auth.jsx](client/src/pages/Auth.jsx)). Structured form state binds, integrated password reset flow, and client with backend `/api/auth` endpoints.
 * **Isaac** (*Dashboard page*):
   - Coded the main welcome landing hub ([Dashboard.jsx](client/src/pages/Dashboard.jsx)), integrating dynamic statistics summaries, recent activity feeds, and mini-leaderboard hooks.
 * **Esther & Fola** (*Quiz page*):
@@ -167,6 +167,8 @@ Below is the official breakdown of the contributors in Group 3 and their contrib
   - Authored the metrics panel ([Statistics.jsx](client/src/pages/Statistics.jsx)), creating responsive graphical percentage tracks grouped by category and difficulty boxes.
 * **Ayo & Nath** (*Profile page*):
   - Programmed the account details settings page ([Profile.jsx](client/src/pages/Profile.jsx)), enabling display name edits, password mocks, and clear session logouts.
+* **Oluwafaloba** (*UI/UX Design & Styling*):
+  - Designed the premium dark theme system, glassmorphic layout wrappers, responsive top header navbar components, custom quiz generator widgets, and overall visual aesthetics across all app pages.
 
 ### ⚙ Backend & System Integration Team
 * **Kelly** (*Backend Engineer*):

@@ -6,9 +6,8 @@
 }
 
 .leaderboard-main {
-    margin-left: 224px;
-    padding: 32px;
-    padding-bottom: 32px;
+    margin-left: 0;
+    padding: 88px 32px 32px;
 }
 
 .leaderboard-title {
@@ -196,7 +195,7 @@
 
     .leaderboard-main{
         margin-left:0;
-        padding:28px 24px 90px;
+        padding:80px 24px 32px;
     }
 
     .podium-wrap{
@@ -218,7 +217,7 @@
 
     .leaderboard-main{
         margin-left:0;
-        padding:20px 16px 90px;
+        padding:80px 16px 32px;
     }
 
     .leaderboard-title{

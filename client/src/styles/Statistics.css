@@ -2,9 +2,8 @@
 .statistics-page { min-height: 100vh; background: var(--bg); }
 
 .statistics-main {
-  margin-left: 224px;
-  padding: 32px;
-  padding-bottom: 32px;
+  margin-left: 0;
+  padding: 88px 32px 32px;
 }
 
 .statistics-title {
@@ -133,12 +132,12 @@
 .diff-breakdown-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
 
 @media (max-width: 900px) {
-  .statistics-main { margin-left: 0; padding: 28px 22px 90px; }
+  .statistics-main { margin-left: 0; padding: 80px 22px 32px; }
   .stat-cards-row { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 767px) {
-  .statistics-main { margin-left: 0; padding: 20px 16px 90px; }
+  .statistics-main { margin-left: 0; padding: 80px 16px 32px; }
   .stat-cards-row { grid-template-columns: repeat(2, 1fr); }
   .difficulty-breakdown-grid { grid-template-columns: repeat(3, 1fr); }
 }
