@@ -179,3 +179,54 @@
 .answer-marker {
   font-size: 0.8rem;
 }
+
+@media (max-width: 600px) {
+  .score-page {
+    padding: 16px;
+    align-items: flex-start;
+  }
+  .score-card-body {
+    padding: 24px 16px;
+  }
+  .score-pct {
+    font-size: 2.8rem;
+  }
+  .score-tally {
+    gap: 16px;
+  }
+  .score-tally-num {
+    font-size: 1.6rem;
+  }
+  .score-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-see-answers,
+  .btn-finish {
+    width: 100%;
+  }
+  .answers-card {
+    padding: 16px;
+  }
+  .answer-item {
+    padding: 12px;
+  }
+  .answer-q-text {
+    font-size: 0.82rem;
+  }
+  .answer-option {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .score-pct {
+    font-size: 2.2rem;
+  }
+  .score-tally {
+    gap: 10px;
+  }
+  .score-tally-divider {
+    height: 36px;
+  }
+}

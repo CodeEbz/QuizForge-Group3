@@ -68,20 +68,20 @@ export default function Dashboard() {
     window.addEventListener("online", handleStatusChange)
     window.addEventListener("offline", handleStatusChange)
 
-    // 4. Auto sync offline attempts on mount / reconnect
-    const unregisterSync = registerOnlineSync(async (syncResult) => {
+    // 4. Auto sync offline attempts on mount / reconnect (only for registered users)
+    const unregisterSync = !isGuestMode() ? registerOnlineSync(async (syncResult) => {
       setSyncStatus(`Synced ${syncResult.synced} offline quizzes successfully!`)
       setTimeout(() => setSyncStatus(""), 5000)
-      await fetchDashboardData() // reload fresh data
-    })
+      await fetchDashboardData()
+    }) : () => {}
 
-    // Sync immediately on mount if online
-    if (navigator.onLine) {
+    // Sync immediately on mount if online and registered
+    if (navigator.onLine && !isGuestMode()) {
       syncOfflineAttempts().then((syncResult) => {
         if (syncResult && syncResult.synced > 0) {
           setSyncStatus(`Synced ${syncResult.synced} offline quizzes successfully!`)
           setTimeout(() => setSyncStatus(""), 5000)
-          fetchDashboardData() // reload fresh data
+          fetchDashboardData()
         }
       }).catch(err => console.error("Error syncing offline attempts on mount:", err))
     }
@@ -168,9 +168,9 @@ export default function Dashboard() {
                 recentActivity.map((a, i) => (
                   <div key={i} className="activity-row">
                     <div>
-                      <div className="activity-subject">{a.quiz ? a.quiz.title : "Quiz"}</div>
+                      <div className="activity-subject">{a.quiz ? a.quiz.title : (a.subject ? `${a.subject} Quiz` : "Quiz")}</div>
                       <div className="activity-meta">
-                        {a.quiz ? `${a.quiz.category} · ${a.quiz.difficulty}` : "General"} · {new Date(a.createdAt).toLocaleDateString()}
+                        {a.quiz ? `${a.quiz.category} · ${a.quiz.difficulty}` : `${a.subject || "General"} · ${a.difficulty || "easy"}`} · {new Date(a.createdAt).toLocaleDateString()}
                       </div>
                     </div>
                     <div>

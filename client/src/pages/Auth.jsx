@@ -100,7 +100,12 @@ export default function AuthPage() {
             </div>
           )}
 
-          {error && <div className="auth-error-msg">{error}</div>}
+          {error && (
+            <div className="auth-error-msg">
+              <span style={{ fontSize: "1.1rem" }}>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
 
           <div className="auth-form-wrap">
             {mode === "login" ? (

@@ -42,9 +42,33 @@ export default function QuizPage() {
 
   // 1. Fetch Quiz on Mount
   useEffect(() => {
+    const loadLocalFallback = () => {
+      const offlineQuiz = getOfflineQuiz(subject, difficulty)
+      setQuizId(offlineQuiz._id || "offline-id")
+      
+      let loadedQuestions = offlineQuiz.questions;
+      const isGuest = isGuestMode();
+      if (isGuest) {
+        loadedQuestions = loadedQuestions.slice(0, 5);
+      }
+
+      setQuestions(loadedQuestions)
+      setAnswers(Array(loadedQuestions.length).fill(null))
+      setTaggedQuestions(Array(loadedQuestions.length).fill(false))
+      // Only mark as offline if actually offline; guests online are NOT offline attempts
+      setIsOfflineAttempt(!navigator.onLine)
+      setLoading(false)
+    }
+
     const loadQuiz = async () => {
       setLoading(true)
       
+      // Guests always use local static questions — no API call
+      if (isGuestMode()) {
+        loadLocalFallback()
+        return
+      }
+
       // If offline, use local offline fallback quizzes immediately
       if (!navigator.onLine) {
         loadLocalFallback()
@@ -84,8 +108,7 @@ export default function QuizPage() {
           setQuizId(activeQuizId)
           
           let loadedQuestions = playRes.data.questions;
-          const isGuest = isGuestMode() || (JSON.parse(localStorage.getItem("quizforge_user") || "{}").role === "guest");
-          if (isGuest) {
+          if (isGuestMode()) {
             loadedQuestions = loadedQuestions.slice(0, 5);
           }
 
@@ -93,7 +116,7 @@ export default function QuizPage() {
           setAnswers(Array(loadedQuestions.length).fill(null))
           setTaggedQuestions(Array(loadedQuestions.length).fill(false))
           if (playRes.data.timeLimitSeconds) {
-            setTimeLeft(isGuest ? Math.min(playRes.data.timeLimitSeconds, 300) : playRes.data.timeLimitSeconds)
+            setTimeLeft(playRes.data.timeLimitSeconds)
           }
         } else {
           loadLocalFallback()
@@ -104,23 +127,6 @@ export default function QuizPage() {
       } finally {
         setLoading(false)
       }
-    }
-
-    const loadLocalFallback = () => {
-      const offlineQuiz = getOfflineQuiz(subject, difficulty)
-      setQuizId(offlineQuiz._id || "offline-id")
-      
-      let loadedQuestions = offlineQuiz.questions;
-      const isGuest = isGuestMode() || (JSON.parse(localStorage.getItem("quizforge_user") || "{}").role === "guest");
-      if (isGuest) {
-        loadedQuestions = loadedQuestions.slice(0, 5);
-      }
-
-      setQuestions(loadedQuestions)
-      setAnswers(Array(loadedQuestions.length).fill(null))
-      setTaggedQuestions(Array(loadedQuestions.length).fill(false))
-      setIsOfflineAttempt(true)
-      setLoading(false)
     }
 
     loadQuiz()
@@ -228,7 +234,10 @@ export default function QuizPage() {
       createdAt: new Date().toISOString()
     }
 
-    queueOfflineAttempt(attemptPayload)
+    // Only queue offline sync for registered users who are actually offline
+    if (!isGuestMode() && isOfflineAttempt) {
+      queueOfflineAttempt(attemptPayload)
+    }
 
     navigate("/score", {
       state: {
@@ -238,7 +247,7 @@ export default function QuizPage() {
         difficulty: config.label,
         answers: answers.map(a => a ? a.selectedOptionIndex : -1),
         questions: gradedQuestions,
-        isOffline: true,
+        isOffline: !isGuestMode() && isOfflineAttempt,
         tagged: taggedQuestions
       }
     })

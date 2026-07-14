@@ -141,12 +141,14 @@ export const api = {
    */
   async getStats() {
     if (isGuestMode()) {
-      // Load offline statistics from localStorage
-      const offlineStats = JSON.parse(localStorage.getItem("quizforge_offline_stats")) || {
-        summary: { totalAttempts: 0, totalScore: 0, averagePercentage: 0, bestPercentage: 0, averageTimeTakenSeconds: 0 },
-        recentAttempts: []
+      // Guests get zeroed stats — no local storage reads/writes
+      return {
+        success: true,
+        data: {
+          summary: { totalAttempts: 0, totalScore: 0, averagePercentage: 0, bestPercentage: 0, averageTimeTakenSeconds: 0 },
+          recentAttempts: []
+        }
       };
-      return { success: true, data: offlineStats };
     }
     return request("/stats/me");
   },
@@ -185,8 +187,7 @@ export const api = {
    */
   async getMyAttempts(page = 1, limit = 10) {
     if (isGuestMode()) {
-      const offlineStats = JSON.parse(localStorage.getItem("quizforge_offline_stats")) || { recentAttempts: [] };
-      return { success: true, data: offlineStats.recentAttempts };
+      return { success: true, data: [] };
     }
     return request(`/attempts/my?page=${page}&limit=${limit}`);
   },

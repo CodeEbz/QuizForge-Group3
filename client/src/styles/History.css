@@ -205,3 +205,30 @@
     padding: 6px 12px;
   }
 }
+
+@media (max-width: 540px) {
+  .history-title {
+    font-size: 1.5rem;
+  }
+  /* Hide less critical columns on small screens */
+  .history-table th:nth-child(4),
+  .history-table td:nth-child(4) {
+    display: none;
+  }
+  .history-table th,
+  .history-table td {
+    padding: 10px 8px;
+    font-size: 0.75rem;
+  }
+  .history-table-title {
+    font-size: 0.82rem;
+  }
+  .history-cat-badge,
+  .history-diff-badge {
+    font-size: 0.68rem;
+    padding: 2px 6px;
+  }
+  .history-score-pct {
+    font-size: 0.9rem;
+  }
+}

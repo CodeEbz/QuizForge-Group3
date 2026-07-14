@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { isGuestMode } from "../services/api";
 import "../styles/Difficulty.css";
 
 const difficulties = [
@@ -66,6 +67,7 @@ function formatSubject(slug) {
 export default function Difficulty() {
   const navigate = useNavigate();
   const { subject = "" } = useParams();
+  const isGuest = isGuestMode();
 
   const subjectName = subjectNames[subject] || formatSubject(subject);
 
@@ -92,112 +94,74 @@ export default function Difficulty() {
 
         <div className="difficulty-grid">
 
-          {difficulties.map((difficulty) => (
+          {difficulties.map((diff) => {
+            const locked = isGuest && diff.level !== "easy";
 
-            <button
-              key={difficulty.level}
-              className="difficulty-card"
-              style={{
-                background: difficulty.bg,
-                borderColor: difficulty.border,
-              }}
-              onClick={() =>
-                navigate(`/quiz/${subject}/${difficulty.level}`)
-              }
-            >
-
-              <div
-                className="difficulty-card-bar"
+            return (
+              <button
+                key={diff.level}
+                className={`difficulty-card${locked ? " locked" : ""}`}
                 style={{
-                  background: difficulty.color,
+                  background: diff.bg,
+                  borderColor: diff.border,
+                  opacity: locked ? 0.55 : 1,
+                  cursor: locked ? "not-allowed" : "pointer",
                 }}
-              />
-
-              <div className="difficulty-card-body">
-
-                <div className="difficulty-card-head">
-
-                  <span className="difficulty-card-icon">
-                    {difficulty.icon}
-                  </span>
-
-                  <span
-                    className="difficulty-card-label"
-                    style={{
-                      color: difficulty.color,
-                    }}
-                  >
-                    {difficulty.label}
-                  </span>
-
-                </div>
-
-                <p className="difficulty-card-desc">
-                  {difficulty.description}
-                </p>
-
-                <div className="difficulty-info-grid">
-
-                  <div
-                    className="difficulty-info-box"
-                    style={{
-                      borderColor: difficulty.border,
-                    }}
-                  >
-
-                    <div
-                      className="difficulty-info-value"
-                      style={{
-                        color: difficulty.color,
-                      }}
-                    >
-                      {difficulty.questions}
-                    </div>
-
-                    <div className="difficulty-info-label">
-                      Questions
-                    </div>
-
-                  </div>
-
-                  <div
-                    className="difficulty-info-box"
-                    style={{
-                      borderColor: difficulty.border,
-                    }}
-                  >
-
-                    <div
-                      className="difficulty-info-value"
-                      style={{
-                        color: difficulty.color,
-                      }}
-                    >
-                      {difficulty.time}
-                    </div>
-
-                    <div className="difficulty-info-label">
-                      Minutes
-                    </div>
-
-                  </div>
-
-                </div>
+                disabled={locked}
+                onClick={() =>
+                  !locked && navigate(`/quiz/${subject}/${diff.level}`)
+                }
+              >
 
                 <div
-                  className="difficulty-start-btn"
-                  style={{
-                    background: difficulty.color,
-                  }}
-                >
-                  Start {difficulty.label} Quiz →
+                  className="difficulty-card-bar"
+                  style={{ background: diff.color }}
+                />
+
+                <div className="difficulty-card-body">
+
+                  <div className="difficulty-card-head">
+                    <span className="difficulty-card-icon">
+                      {locked ? "🔒" : diff.icon}
+                    </span>
+                    <span
+                      className="difficulty-card-label"
+                      style={{ color: diff.color }}
+                    >
+                      {diff.label}
+                    </span>
+                  </div>
+
+                  <p className="difficulty-card-desc">
+                    {locked ? "Registered accounts only. Sign up to unlock." : diff.description}
+                  </p>
+
+                  <div className="difficulty-info-grid">
+                    <div className="difficulty-info-box" style={{ borderColor: diff.border }}>
+                      <div className="difficulty-info-value" style={{ color: diff.color }}>
+                        {diff.questions}
+                      </div>
+                      <div className="difficulty-info-label">Questions</div>
+                    </div>
+                    <div className="difficulty-info-box" style={{ borderColor: diff.border }}>
+                      <div className="difficulty-info-value" style={{ color: diff.color }}>
+                        {diff.time}
+                      </div>
+                      <div className="difficulty-info-label">Minutes</div>
+                    </div>
+                  </div>
+
+                  <div
+                    className="difficulty-start-btn"
+                    style={{ background: locked ? "var(--border)" : diff.color }}
+                  >
+                    {locked ? "🔒 Locked" : `Start ${diff.label} Quiz →`}
+                  </div>
+
                 </div>
-
-              </div>
-
-            </button>
-
-          ))}
+              </button>
+            );
+          })}
 
         </div>
 

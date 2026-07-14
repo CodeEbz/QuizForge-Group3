@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Navbar from "../components/Navbar"
+import { isGuestMode } from "../services/api"
 import "../styles/QuizMenu.css"
 
 const subjects = [
@@ -21,15 +22,38 @@ const subjects = [
 ]
 
 const triviaCategories = [
-  { id: "", name: "-- Pre-defined Trivia Categories --" },
-  { id: "9", name: "General Knowledge" },
+  { id: "", name: "-- Select a Trivia Category --" },
+  { id: "9",  name: "General Knowledge" },
   { id: "18", name: "Science: Computers" },
   { id: "19", name: "Science: Mathematics" },
   { id: "22", name: "Geography" },
   { id: "23", name: "History" },
   { id: "21", name: "Sports" },
   { id: "11", name: "Entertainment: Film" },
-  { id: "12", name: "Entertainment: Music" }
+  { id: "12", name: "Entertainment: Music" },
+  { id: "17", name: "Science & Nature" },
+  { id: "20", name: "Mythology" },
+  { id: "14", name: "Television" },
+  { id: "15", name: "Video Games" },
+]
+
+// Curated AI topics that generate accurate, reliable questions
+const aiTopics = [
+  { value: "", label: "-- Select a Topic --" },
+  { value: "TypeScript", label: "TypeScript" },
+  { value: "Docker", label: "Docker & Containers" },
+  { value: "Git and GitHub", label: "Git & GitHub" },
+  { value: "Cybersecurity Fundamentals", label: "Cybersecurity" },
+  { value: "Web Design Principles", label: "Web Design" },
+  { value: "Cloud Computing AWS", label: "Cloud Computing (AWS)" },
+  { value: "Linux Command Line", label: "Linux & Command Line" },
+  { value: "REST API Design", label: "REST API Design" },
+  { value: "GraphQL", label: "GraphQL" },
+  { value: "Kubernetes", label: "Kubernetes" },
+  { value: "Machine Learning Basics", label: "Machine Learning" },
+  { value: "Networking Fundamentals", label: "Networking" },
+  { value: "Operating Systems", label: "Operating Systems" },
+  { value: "Software Engineering Principles", label: "Software Engineering" },
 ]
 
 function slugify(name) {
@@ -38,14 +62,15 @@ function slugify(name) {
 
 export default function QuizMenuPage() {
   const navigate = useNavigate()
-  const [customTopic, setCustomTopic] = useState("")
+  const [selectedAiTopic, setSelectedAiTopic] = useState("")
   const [selectedTrivia, setSelectedTrivia] = useState("")
   const [difficulty, setDifficulty] = useState("easy")
+  const isGuest = isGuestMode()
 
   const handleCustomQuiz = (e) => {
     e.preventDefault()
-    if (customTopic.trim()) {
-      navigate(`/quiz/${slugify(customTopic.trim())}/${difficulty}`)
+    if (selectedAiTopic) {
+      navigate(`/quiz/${slugify(selectedAiTopic)}/${difficulty}`)
     }
   }
 
@@ -78,26 +103,39 @@ export default function QuizMenuPage() {
         </div>
 
         {/* Custom Quiz generator section */}
-        <section className="custom-quiz-section">
+        <section className="custom-quiz-section" style={{ position: "relative" }}>
+          {isGuest && (
+            <div className="custom-quiz-guest-overlay">
+              <div className="guest-lock-card" style={{ maxWidth: "360px" }}>
+                <span className="guest-lock-icon">🔒</span>
+                <h3 className="guest-lock-title">Registered Users Only</h3>
+                <p className="guest-lock-desc">Custom quiz generation is available for registered accounts. Sign up to unlock AI-powered and trivia quizzes.</p>
+                <button className="btn-guest-register" onClick={() => navigate("/auth")}>Create Free Account</button>
+              </div>
+            </div>
+          )}
+
           <h2 className="custom-quiz-title">Create a Custom Quiz</h2>
           <p className="custom-quiz-sub">
             Preferred subject not listed? Generate a dynamic quiz customized to your choice!
           </p>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "28px", opacity: isGuest ? 0.35 : 1, pointerEvents: isGuest ? "none" : "auto" }}>
             
             {/* Custom AI generated quiz */}
             <form onSubmit={handleCustomQuiz} className="custom-quiz-grid">
               <div className="custom-quiz-field">
                 <label className="custom-quiz-label">Custom Topic (AI Generated)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. TypeScript, Docker, World Geography, Chemistry..."
-                  value={customTopic}
-                  onChange={(e) => setCustomTopic(e.target.value)}
-                  className="custom-quiz-input"
+                <select
+                  value={selectedAiTopic}
+                  onChange={(e) => setSelectedAiTopic(e.target.value)}
+                  className="custom-quiz-select"
                   required
-                />
+                >
+                  {aiTopics.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
+                </select>
               </div>
               <div className="custom-quiz-field">
                 <label className="custom-quiz-label">Difficulty</label>
@@ -111,7 +149,7 @@ export default function QuizMenuPage() {
                   <option value="hard">Hard</option>
                 </select>
               </div>
-              <button type="submit" className="custom-quiz-btn">
+              <button type="submit" className="custom-quiz-btn" disabled={!selectedAiTopic}>
                 Generate AI Quiz
               </button>
             </form>
