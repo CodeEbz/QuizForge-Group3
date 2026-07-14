@@ -161,14 +161,13 @@ export default function QuizPage() {
           // Fetch full quiz with correct answers to show in review
           const reviewRes = await api.getQuizForReview(quizId)
           let reviewQuestions = questions.map((q, idx) => {
-            const correctOpt = reviewRes.data.questions[idx].options.find(o => o.isCorrect)
             const correctIdx = reviewRes.data.questions[idx].options.findIndex(o => o.isCorrect)
-            
             return {
               question: q.questionText,
               options: q.options.map(o => o.text),
               correct: correctIdx >= 0 ? correctIdx : 0,
-              explanation: reviewRes.data.questions[idx].explanation || "No explanation provided for this question."
+              // Use explanation from play response (already included), fallback to review response
+              explanation: q.explanation || reviewRes.data.questions[idx].explanation || "No explanation provided."
             }
           })
 

@@ -113,6 +113,7 @@ const getQuizForAttempt = asyncHandler(async (req, res) => {
       _id: q._id,
       questionText: q.questionText,
       points: q.points,
+      explanation: q.explanation || '',
       options: q.options.map((o) => ({ _id: o._id, text: o.text })),
     })),
   };

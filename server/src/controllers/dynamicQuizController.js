@@ -470,6 +470,7 @@ Do not wrap your output in markdown code blocks. Return only the raw JSON.`;
     _id: q._id,
     questionText: q.questionText,
     points: q.points,
+    explanation: q.explanation || '',
     options: q.options.map((o) => ({ _id: o._id, text: o.text })),
   }));
 
