@@ -28,7 +28,7 @@ export default function ScorePage() {
   const state = location.state || fallbackState
 
   const [showAnswers, setShowAnswers] = useState(false)
-  const pct   = Math.round((state.score / state.total) * 100)
+  const pct   = Math.round((state.score / (state.totalPossible || state.total)) * 100)
   const grade = getGrade(pct)
 
   return (

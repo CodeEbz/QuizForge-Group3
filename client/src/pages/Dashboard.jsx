@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import Navbar from "../components/Navbar"
 import { api, isGuestMode } from "../services/api"
 import { registerOnlineSync, syncOfflineAttempts } from "../services/offlineSync"
@@ -7,6 +7,7 @@ import "../styles/Dashboard.css"
 
 export default function Dashboard() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [user, setUser] = useState({ name: "Alex" })
   const [statsData, setStatsData] = useState({
     totalAttempts: 0,
@@ -19,7 +20,9 @@ export default function Dashboard() {
   const [topPlayers, setTopPlayers] = useState([])
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [syncStatus, setSyncStatus] = useState("")
+  const [apiError, setApiError] = useState("")
 
+  // Re-fetch every time we navigate back to dashboard (e.g. after finishing a quiz)
   useEffect(() => {
     // 1. Load user from local storage
     const storedUser = localStorage.getItem("quizforge_user")
@@ -29,6 +32,7 @@ export default function Dashboard() {
 
     // 2. Fetch data function
     const fetchDashboardData = async () => {
+      setApiError("")
       try {
         // Fetch User profile (ensures fresh name)
         const meRes = await api.getMe()
@@ -41,8 +45,14 @@ export default function Dashboard() {
         const statsRes = await api.getStats()
         if (statsRes.success) {
           const s = statsRes.data.summary
-          setStatsData(s)
-          setRecentActivity(statsRes.data.recentAttempts || [])
+          setStatsData({
+            totalAttempts: s.totalAttempts || 0,
+            totalScore: s.totalScore || 0,
+            averagePercentage: Math.round(s.averagePercentage || 0),
+            bestPercentage: Math.round(s.bestPercentage || 0),
+            averageTimeTakenSeconds: s.averageTimeTakenSeconds || 0
+          })
+          setRecentActivity((statsRes.data.recentAttempts || []).slice(0, 5))
         }
 
         // Fetch Leaderboard top players
@@ -52,12 +62,7 @@ export default function Dashboard() {
         }
       } catch (err) {
         console.error("Error loading dashboard data:", err)
-        // Load fallback/cached data if offline
-        const offlineStats = JSON.parse(localStorage.getItem("quizforge_offline_stats"))
-        if (offlineStats) {
-          setStatsData(offlineStats.summary)
-          setRecentActivity(offlineStats.recentAttempts)
-        }
+        setApiError("Could not reach the server. Check your connection or ensure the backend is running.")
       }
     }
 
@@ -93,7 +98,7 @@ export default function Dashboard() {
       window.removeEventListener("offline", handleStatusChange)
       unregisterSync()
     }
-  }, [])
+  }, [location.pathname])
 
   function scoreColor(pct) {
     if (pct >= 80) return "var(--green)"
@@ -117,6 +122,11 @@ export default function Dashboard() {
         {!isOnline && (
           <div className="offline-banner">
             ⚠️ You are running offline. Quizzes can be played and progress will sync once reconnected.
+          </div>
+        )}
+        {apiError && isOnline && (
+          <div className="offline-banner" style={{ background: '#1e0808', borderColor: '#dc2626' }}>
+            ⚠️ {apiError}
           </div>
         )}
         {syncStatus && (

@@ -39,8 +39,8 @@ const getMyStats = asyncHandler(async (req, res) => {
   const recentAttempts = await Attempt.find({ user: userId })
     .populate('quiz', 'title category difficulty')
     .sort({ createdAt: -1 })
-    .limit(5)
-    .select('score totalPossible percentage createdAt quiz');
+    .limit(100)
+    .select('score totalPossible percentage timeTakenSeconds createdAt quiz');
 
   res.status(200).json({
     success: true,

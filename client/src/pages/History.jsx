@@ -147,6 +147,7 @@ export default function HistoryPage() {
                     const title = a.quiz ? a.quiz.title : (a.subject ? `${a.subject} Fallback` : "Custom Quiz")
                     const cat = a.quiz ? a.quiz.category : (a.subject || "General")
                     const diff = a.quiz ? a.quiz.difficulty : (a.difficulty || "medium")
+                    const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
                     const pct = a.percentage !== undefined ? a.percentage : Math.round((a.score / a.totalPossible) * 100)
                     const quizId = a.quiz ? a.quiz._id : a.quizId
                     const dateStr = new Date(a.createdAt).toLocaleDateString(undefined, {
@@ -177,7 +178,7 @@ export default function HistoryPage() {
                           <button
                             className="btn-history-review"
                             disabled={reviewLoading !== null || isGuestMode() || !quizId || quizId.startsWith("offline-")}
-                            onClick={() => handleReview(a._id, quizId, title, diff)}
+                            onClick={() => handleReview(a._id, quizId, title, diffLabel)}
                           >
                             {reviewLoading === a._id ? "Loading..." : "Review"}
                           </button>

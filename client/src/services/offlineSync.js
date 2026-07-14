@@ -167,9 +167,6 @@ export function registerOnlineSync(onSyncSuccess) {
   };
 
   window.addEventListener("online", triggerSync);
-  
-  // Trigger immediately in case we are already online
-  triggerSync();
 
   return () => {
     window.removeEventListener("online", triggerSync);
