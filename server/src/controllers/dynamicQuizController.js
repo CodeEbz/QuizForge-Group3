@@ -297,8 +297,8 @@ const generateQuiz = asyncHandler(async (req, res) => {
   let quizData = null;
   let generatorUsed = '';
 
-  // 1. Check if we should use Open Trivia API (either category is "other" or triviaCategoryId is provided)
-  const isTrivia = category.toLowerCase() === 'other' || triviaCategoryId;
+  // 1. Check if we should use Open Trivia API (triviaCategoryId is explicitly provided)
+  const isTrivia = !!triviaCategoryId;
 
   if (isTrivia) {
     const triviaId = triviaCategoryId || 9; // Default to General Knowledge (9) if none provided
@@ -355,28 +355,41 @@ const generateQuiz = asyncHandler(async (req, res) => {
   if (!quizData && process.env.OPENAI_API_KEY) {
     try {
       generatorUsed = 'OpenAI API';
-      const prompt = `Generate a high-quality quiz with exactly ${count} multiple-choice questions on the topic "${category}" with a difficulty level of "${difficulty.toLowerCase()}".
-IMPORTANT: All questions MUST be strictly about "${category}" only. Do NOT include questions from unrelated topics.
-Each question must have exactly 4 options, exactly one option must be marked as correct (isCorrect: true), and the correct answer MUST be factually accurate and verifiable.
-Provide a detailed explanation confirming why the correct option is right.
-Provide the response as a single valid JSON object matching the following structure:
+      
+      // Build difficulty-specific instructions
+      const difficultyGuide = difficulty.toLowerCase() === 'easy'
+        ? 'Questions should be beginner-level, testing basic definitions and fundamental concepts.'
+        : difficulty.toLowerCase() === 'medium'
+        ? 'Questions should be intermediate-level, testing applied knowledge and practical understanding.'
+        : 'Questions should be advanced-level, testing deep expertise, edge cases, and complex scenarios.';
+
+      const prompt = `Generate a high-quality quiz with exactly ${count} multiple-choice questions strictly about "${category}".
+Difficulty: ${difficulty.toUpperCase()}. ${difficultyGuide}
+IMPORTANT RULES:
+- ALL questions MUST be exclusively about "${category}". Do NOT include questions from any other topic.
+- Each question must have exactly 4 answer options.
+- Exactly ONE option must be correct (isCorrect: true). The correct answer MUST be factually accurate and verifiable.
+- The 3 incorrect options must be plausible but clearly wrong.
+- Vary the question styles: definitions, code behavior, best practices, comparisons.
+- Do NOT repeat questions or use trivially similar phrasing.
+- Provide a concise explanation confirming why the correct answer is right.
+Return ONLY a raw JSON object (no markdown, no code blocks) matching this structure:
 {
   "title": "Quiz Title",
-  "description": "Short quiz description",
+  "description": "Short description",
   "questions": [
     {
-      "questionText": "Question text here?",
+      "questionText": "Question?",
       "options": [
-        { "text": "Option A text", "isCorrect": false },
-        { "text": "Option B text", "isCorrect": true },
-        { "text": "Option C text", "isCorrect": false },
-        { "text": "Option D text", "isCorrect": false }
+        { "text": "Option A", "isCorrect": false },
+        { "text": "Option B", "isCorrect": true },
+        { "text": "Option C", "isCorrect": false },
+        { "text": "Option D", "isCorrect": false }
       ],
-      "explanation": "Detailed explanation of why Option B is correct."
+      "explanation": "Explanation of why Option B is correct."
     }
   ]
-}
-Do not wrap your output in markdown code blocks. Return only the raw JSON.`;
+}`;
 
       const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -426,10 +439,11 @@ Do not wrap your output in markdown code blocks. Return only the raw JSON.`;
     }
   }
 
-  // 3. Fallback Generation if both APIs were skipped, failed, or key was missing
+  // 3. Fallback: "other" category without trivia ID uses general computer knowledge local bank
   if (!quizData) {
     generatorUsed = 'Local Dynamic Generator';
-    quizData = generateLocalFallbackQuiz(category, difficulty, count);
+    const fallbackCategory = category.toLowerCase() === 'other' ? 'general' : category;
+    quizData = generateLocalFallbackQuiz(fallbackCategory, difficulty, count);
   }
 
   // Create the quiz document in database

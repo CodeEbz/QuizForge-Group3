@@ -150,6 +150,12 @@ export async function syncOfflineAttempts() {
 
   localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(remaining));
 
+  // If all attempts synced successfully, clear the local offline stats cache
+  // so the dashboard re-fetches fresh stats from the server
+  if (synced > 0 && remaining.length === 0) {
+    localStorage.removeItem(STATS_KEY);
+  }
+
   return { synced, errors };
 }
 

@@ -52,7 +52,20 @@ const getMyStats = asyncHandler(async (req, res) => {
         bestPercentage: 0,
         averageTimeTakenSeconds: 0,
       },
-      recentAttempts,
+      recentAttempts: recentAttempts.map(a => ({
+        _id: a._id,
+        score: a.score,
+        totalPossible: a.totalPossible,
+        percentage: a.percentage,
+        timeTakenSeconds: a.timeTakenSeconds,
+        createdAt: a.createdAt,
+        quiz: a.quiz ? {
+          _id: a.quiz._id,
+          title: a.quiz.title,
+          category: a.quiz.category,
+          difficulty: a.quiz.difficulty
+        } : null
+      }))
     },
   });
 });

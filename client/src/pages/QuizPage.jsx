@@ -37,41 +37,34 @@ export default function QuizPage() {
   const [answers, setAnswers] = useState([]) // Stores: { questionId, selectedOptionId, selectedOptionIndex }
   const [timeLeft, setTimeLeft] = useState(config.time)
   const [showCancel, setShowCancel] = useState(false)
-  const [isOfflineAttempt, setIsOfflineAttempt] = useState(!navigator.onLine)
+  const [isOfflineAttempt, setIsOfflineAttempt] = useState(false)
   const [taggedQuestions, setTaggedQuestions] = useState([])
 
   // 1. Fetch Quiz on Mount
   useEffect(() => {
-    const loadLocalFallback = () => {
+    const loadLocalFallback = (offline = false) => {
       const offlineQuiz = getOfflineQuiz(subject, difficulty)
       setQuizId(offlineQuiz._id || "offline-id")
-      
-      let loadedQuestions = offlineQuiz.questions;
-      const isGuest = isGuestMode();
-      if (isGuest) {
-        loadedQuestions = loadedQuestions.slice(0, 5);
-      }
-
+      const loadedQuestions = offlineQuiz.questions.slice(0, isGuestMode() ? 5 : offlineQuiz.questions.length)
       setQuestions(loadedQuestions)
       setAnswers(Array(loadedQuestions.length).fill(null))
       setTaggedQuestions(Array(loadedQuestions.length).fill(false))
-      // Only mark as offline if actually offline; guests online are NOT offline attempts
-      setIsOfflineAttempt(!navigator.onLine)
+      setIsOfflineAttempt(offline)
       setLoading(false)
     }
 
     const loadQuiz = async () => {
       setLoading(true)
-      
-      // Guests always use local static questions — no API call
+
+      // Guests always use local static questions — no API call, never offline attempt
       if (isGuestMode()) {
-        loadLocalFallback()
+        loadLocalFallback(false)
         return
       }
 
-      // If offline, use local offline fallback quizzes immediately
+      // If offline, use local offline fallback and mark as offline attempt
       if (!navigator.onLine) {
-        loadLocalFallback()
+        loadLocalFallback(true)
         return
       }
 
@@ -89,8 +82,11 @@ export default function QuizPage() {
         let triviaId = null;
         if (queryCategory.startsWith("other-")) {
           const parts = queryCategory.split("-");
-          queryCategory = "other";
           triviaId = parseInt(parts[1], 10);
+          queryCategory = "other";
+        } else if (queryCategory === "other") {
+          // No trivia ID selected — use general computer knowledge via local fallback
+          queryCategory = "general";
         }
 
         const genRes = await api.generateQuiz({
@@ -106,24 +102,19 @@ export default function QuizPage() {
 
         if (playRes && playRes.success) {
           setQuizId(activeQuizId)
-          
-          let loadedQuestions = playRes.data.questions;
-          if (isGuestMode()) {
-            loadedQuestions = loadedQuestions.slice(0, 5);
-          }
-
-          setQuestions(loadedQuestions)
-          setAnswers(Array(loadedQuestions.length).fill(null))
-          setTaggedQuestions(Array(loadedQuestions.length).fill(false))
+          setQuestions(playRes.data.questions)
+          setAnswers(Array(playRes.data.questions.length).fill(null))
+          setTaggedQuestions(Array(playRes.data.questions.length).fill(false))
+          setIsOfflineAttempt(false)
           if (playRes.data.timeLimitSeconds) {
             setTimeLeft(playRes.data.timeLimitSeconds)
           }
         } else {
-          loadLocalFallback()
+          loadLocalFallback(false)
         }
       } catch (err) {
         console.error("Failed to load quiz from API, loading local fallback.", err)
-        loadLocalFallback()
+        loadLocalFallback(false)
       } finally {
         setLoading(false)
       }
