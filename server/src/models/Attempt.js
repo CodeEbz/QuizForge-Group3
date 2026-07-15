@@ -6,9 +6,18 @@ const mongoose = require('mongoose');
  */
 const answerSchema = new mongoose.Schema(
   {
-    question: { type: mongoose.Schema.Types.ObjectId, required: true },
-    selectedOption: { type: mongoose.Schema.Types.ObjectId, required: false },
-    isCorrect: { type: Boolean, required: true },
+    question: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      required: true 
+    },
+    selectedOption: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      required: false 
+    },
+    isCorrect: {
+      type: Boolean,
+      required: true
+    }
   },
   { _id: false }
 );
@@ -27,20 +36,47 @@ const attemptSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+    
+    subject: {
+      type: String,
+      enum: [
+        "JavaScript",
+        "React",
+        "HTML",
+        "CSS",
+        "MongoDB",
+        "Node.js",
+        "Express",
+        "Python",
+        "Java",
+        "C++",
+        "C#",
+        "SQL",
+        "Data Structures",
+        "Algorithms",
+        "Other"
+      ],
+      default: 'Other',
+    },
+    difficulty: {
+      type: String,
+      enum: ['easy', 'medium', 'hard'],
+      default: 'medium',
+    },
     answers: {
       type: [answerSchema],
       required: true,
     },
     score: {
-      type: Number, // points earned
+      type: Number,
       required: true,
     },
     totalPossible: {
-      type: Number, // points available in the quiz at time of attempt
+      type: Number,
       required: true,
     },
     percentage: {
-      type: Number, // score / totalPossible * 100, precomputed for fast reads
+      type: Number,
       required: true,
     },
     timeTakenSeconds: {
@@ -51,7 +87,6 @@ const attemptSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Speeds up leaderboard aggregations (per-quiz ranking, per-user history)
 attemptSchema.index({ quiz: 1, score: -1 });
 attemptSchema.index({ user: 1, createdAt: -1 });
 

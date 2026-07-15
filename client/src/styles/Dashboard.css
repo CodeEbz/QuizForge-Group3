@@ -178,7 +178,22 @@
   border: 1px solid var(--green-border);
 }
 
-.mini-lb-badge { font-size: 1.2rem; width: 22px; text-align: center; }
+.mini-lb-badge { font-size: 1.2rem; width: 28px; text-align: center; }
+
+.mini-lb-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+}
 
 .mini-lb-name {
   flex: 1;

@@ -4,6 +4,36 @@ import Navbar from "../components/Navbar"
 import { api, isGuestMode } from "../services/api"
 import "../styles/Statistics.css"
 
+
+const subjectColors = {
+  "JavaScript": "#d4a017",
+  "React": "#5bc0eb",
+  "HTML": "#e86f4c",
+  "CSS": "#4a7db5",
+  "MongoDB": "#5b8c5a",
+  "Node.js": "#6b8c6b",
+  "Express": "#6b6b6b",
+  "Python": "#4f7aab",
+  "Java": "#6d8ba0",
+  "C++": "#5a6c7a",
+  "C#": "#7a5c8a",
+  "SQL": "#4a7a8a",
+  "Data Structures": "#8a6e9b",
+  "Algorithms": "#c07a4a",
+  "Other": "#8a9ba8",
+};
+
+const getSubjectColor = (subject) => {
+  if (subjectColors[subject]) return subjectColors[subject];
+  // Generate a deterministic soft color for unknown subjects
+  let hash = 0;
+  for (let i = 0; i < subject.length; i++) {
+    hash = subject.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 40%, 60%)`; // muted saturation
+};
+
 export default function Statistics() {
   const navigate = useNavigate()
   const [statsData, setStatsData] = useState({
@@ -26,12 +56,6 @@ export default function Statistics() {
         }
       } catch (err) {
         console.error("Error fetching statistics:", err)
-        // Try to load offline statistics
-        const offlineStats = JSON.parse(localStorage.getItem("quizforge_offline_stats"))
-        if (offlineStats) {
-          setStatsData(offlineStats.summary)
-          setRecentAttempts(offlineStats.recentAttempts)
-        }
       } finally {
         setLoading(false)
       }
@@ -39,38 +63,37 @@ export default function Statistics() {
     fetchStats()
   }, [])
 
-  // Aggregate Category Breakdown from attempts
   const categoryMap = {}
   let favCategory = "N/A"
   let maxCatCount = 0
 
-  // Aggregate Difficulty Breakdown from attempts
   const difficultyMap = { easy: 0, medium: 0, hard: 0 }
   let favDifficulty = "Medium"
 
+  // Skip 'General' subjects
   recentAttempts.forEach(attempt => {
-    const category = attempt.quiz ? attempt.quiz.category : "general"
-    const difficulty = attempt.quiz ? attempt.quiz.difficulty.toLowerCase() : "medium"
+    const category = attempt.subject || "General"
+    if (category === 'General' || category === 'general') return;
 
-    // Category calculation
+    const difficulty = attempt.difficulty || "medium"
+    const difficultyLower = difficulty.toLowerCase()
+
     if (!categoryMap[category]) {
       categoryMap[category] = { count: 0, totalPct: 0 }
     }
     categoryMap[category].count += 1
-    categoryMap[category].totalPct += attempt.percentage
+    categoryMap[category].totalPct += attempt.percentage || 0
 
     if (categoryMap[category].count > maxCatCount) {
       maxCatCount = categoryMap[category].count
       favCategory = category.charAt(0).toUpperCase() + category.slice(1)
     }
 
-    // Difficulty calculation
-    if (difficultyMap[difficulty] !== undefined) {
-      difficultyMap[difficulty] += 1
+    if (difficultyMap[difficultyLower] !== undefined) {
+      difficultyMap[difficultyLower] += 1
     }
   })
 
-  // Determine Favorite Difficulty
   let maxDiffCount = -1
   Object.keys(difficultyMap).forEach(d => {
     if (difficultyMap[d] > maxDiffCount) {
@@ -79,19 +102,20 @@ export default function Statistics() {
     }
   })
 
-  // If no attempts yet, display N/A for favorites
   if (recentAttempts.length === 0) {
     favCategory = "None"
     favDifficulty = "None"
   }
 
-  // Format category stats array for the performance list
-  const categoryStatsList = Object.keys(categoryMap).map(cat => ({
-    subject: cat.charAt(0).toUpperCase() + cat.slice(1),
-    taken: categoryMap[cat].count,
-    avg: Math.round(categoryMap[cat].totalPct / categoryMap[cat].count),
-    color: cat === "javascript" ? "var(--yellow)" : cat === "react" ? "var(--cyan)" : cat === "html" ? "var(--orange)" : cat === "css" ? "var(--blue)" : "var(--green)"
-  })).sort((a, b) => b.avg - a.avg)
+  const categoryStatsList = Object.keys(categoryMap)
+    .filter(cat => cat !== 'General' && cat !== 'general')
+    .map(cat => ({
+      subject: cat.charAt(0).toUpperCase() + cat.slice(1),
+      taken: categoryMap[cat].count,
+      avg: Math.round(categoryMap[cat].totalPct / categoryMap[cat].count),
+      color: getSubjectColor(cat),
+    }))
+    .sort((a, b) => b.avg - a.avg)
 
   const topStats = [
     { label: "Total Quizzes",   value: statsData.totalAttempts, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "✦" },
@@ -139,7 +163,6 @@ export default function Statistics() {
           <p className="no-activity" style={{ marginTop: "40px" }}>Loading statistics...</p>
         ) : (
           <>
-            {/* Top stat cards */}
             <div className="stat-cards-row">
               {topStats.map(s => (
                 <div key={s.label} className="stat-mini-card" style={{ background: s.bg, borderColor: s.border }}>
@@ -150,7 +173,6 @@ export default function Statistics() {
               ))}
             </div>
 
-            {/* Subject performance bars */}
             <div className="subject-bars-card">
               <h2 className="subject-bars-title">Performance by Subject</h2>
               {categoryStatsList.length === 0 ? (
@@ -159,7 +181,7 @@ export default function Statistics() {
                 categoryStatsList.map(s => (
                   <div key={s.subject} className="subject-bar-row">
                     <div className="subject-bar-meta">
-                      <span className="subject-bar-name">{s.subject}</span>
+                      <span className="subject-bar-name" style={{ color: s.color }}>{s.subject}</span>
                       <div className="subject-bar-info">
                         <span>{s.taken} {s.taken === 1 ? 'quiz' : 'quizzes'}</span>
                         <span className="subject-bar-avg" style={{ color: s.color }}>Avg {s.avg}%</span>
@@ -173,7 +195,6 @@ export default function Statistics() {
               )}
             </div>
 
-            {/* Difficulty breakdown */}
             <div className="difficulty-breakdown-card">
               <h2 className="difficulty-breakdown-title">Quizzes by Difficulty</h2>
               <div className="difficulty-breakdown-grid">

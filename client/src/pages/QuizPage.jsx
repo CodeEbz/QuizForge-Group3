@@ -1,256 +1,189 @@
-import { useState, useEffect, useCallback } from "react"
-import { useNavigate, useParams } from "react-router-dom"
-import { api, isGuestMode } from "../services/api"
-import { getOfflineQuiz } from "../data/offlineQuizzes"
-import { queueOfflineAttempt } from "../services/offlineSync"
-import "../styles/QuizPage.css"
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { api, isGuestMode } from "../services/api";
+import { guestQuizzes } from "../data/guestQuizzes";
+import "../styles/QuizPage.css";
 
 const difficultyConfig = {
   easy:   { questions: 20, time: 20 * 60, label: "Easy",   color: "var(--green)"  },
   medium: { questions: 30, time: 45 * 60, label: "Medium", color: "var(--blue)"   },
   hard:   { questions: 50, time: 60 * 60, label: "Hard",   color: "var(--orange)" },
-}
+};
 
 function formatSubject(slug) {
-  return slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
+  return slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
 function formatTime(seconds) {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+  if (typeof seconds !== 'number' || isNaN(seconds) || seconds < 0) {
+    return '00:00';
+  }
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 export default function QuizPage() {
-  const navigate = useNavigate()
-  const { subject = "", difficulty = "easy" } = useParams()
-  const config = difficultyConfig[difficulty] || difficultyConfig.easy
-  const subjectName = formatSubject(subject)
+  const navigate = useNavigate();
+  const { subject = "", difficulty = "easy" } = useParams();
+  const config = difficultyConfig[difficulty] || difficultyConfig.easy;
+  const subjectName = formatSubject(subject);
 
-  const [loading, setLoading] = useState(true)
-  const [isGrading, setIsGrading] = useState(false)
-  const [showPreSubmitReview, setShowPreSubmitReview] = useState(false)
-  const [quizId, setQuizId] = useState(null)
-  const [questions, setQuestions] = useState([])
-  const [current, setCurrent] = useState(0)
-  const [selectedOptId, setSelectedOptId] = useState(null)
-  const [answers, setAnswers] = useState([]) // Stores: { questionId, selectedOptionId, selectedOptionIndex }
-  const [timeLeft, setTimeLeft] = useState(config.time)
-  const [showCancel, setShowCancel] = useState(false)
-  const [isOfflineAttempt, setIsOfflineAttempt] = useState(false)
-  const [taggedQuestions, setTaggedQuestions] = useState([])
+  // State
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isGrading, setIsGrading] = useState(false);
+  const [showPreSubmitReview, setShowPreSubmitReview] = useState(false);
+  const [quizId, setQuizId] = useState(null);
+  const [questions, setQuestions] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [selectedOptId, setSelectedOptId] = useState(null);
+  const [answers, setAnswers] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(config.time);
+  const [showCancel, setShowCancel] = useState(false);
+  const [taggedQuestions, setTaggedQuestions] = useState([]);
 
-  // 1. Fetch Quiz on Mount
+  // ✅ Guard to prevent duplicate requests for the same subject/difficulty
+  const loadedRef = useRef({ subject: null, difficulty: null });
+
+  // 1. Load quiz on mount
   useEffect(() => {
-    const loadLocalFallback = (offline = false) => {
-      const offlineQuiz = getOfflineQuiz(subject, difficulty)
-      setQuizId(offlineQuiz._id || "offline-id")
-      const loadedQuestions = offlineQuiz.questions.slice(0, isGuestMode() ? 5 : offlineQuiz.questions.length)
-      setQuestions(loadedQuestions)
-      setAnswers(Array(loadedQuestions.length).fill(null))
-      setTaggedQuestions(Array(loadedQuestions.length).fill(false))
-      setIsOfflineAttempt(offline)
-      setLoading(false)
-    }
-
     const loadQuiz = async () => {
-      setLoading(true)
+      // ✅ Prevent duplicate load for the same subject/difficulty
+      if (loadedRef.current.subject === subject && loadedRef.current.difficulty === difficulty) {
+        return;
+      }
+      loadedRef.current.subject = subject;
+      loadedRef.current.difficulty = difficulty;
 
-      // Guests always use local static questions — no API call, never offline attempt
+      setLoading(true);
+      setError(null);
+
+      // Guest mode
       if (isGuestMode()) {
-        loadLocalFallback(false)
-        return
-      }
-
-      // If offline, use local offline fallback and mark as offline attempt
-      if (!navigator.onLine) {
-        loadLocalFallback(true)
-        return
-      }
-
-      try {
-        let playRes = null;
-        let activeQuizId = null;
-
-        // If the subject is 'other' or maps to a dynamic type, we use api.generateQuiz
-        // Wait, does it check if it is other or custom? Yes, if it is not in the predefined list, or if the user is online,
-        // we can generate it dynamically to ensure correct question counts (20, 30, 50)!
-        const isStandardPreseeded = ["javascript", "react", "html", "css"].includes(subject.toLowerCase());
-        
-        // If we are online, generate a dynamic quiz of exact counts!
-        let queryCategory = subject.toLowerCase();
-        let triviaId = null;
-        if (queryCategory.startsWith("other-")) {
-          const parts = queryCategory.split("-");
-          triviaId = parseInt(parts[1], 10);
-          queryCategory = "other";
-        } else if (queryCategory === "other") {
-          // No trivia ID selected — use general computer knowledge via local fallback
-          queryCategory = "general";
+        const guestQuiz = guestQuizzes[subject.toLowerCase()];
+        if (!guestQuiz) {
+          alert(
+            "This subject is not available in Guest Mode. Please log in to access AI-generated quizzes."
+          );
+          navigate("/quiz-menu");
+          return;
         }
+        setQuizId("guest");
+        setQuestions(guestQuiz);
+        setAnswers(Array(guestQuiz.length).fill(null));
+        setTaggedQuestions(Array(guestQuiz.length).fill(false));
+        setTimeLeft(config.time);
+        setLoading(false);
+        return;
+      }
 
+      // Online generation
+      try {
         const genRes = await api.generateQuiz({
-          category: queryCategory,
+          subject: subject.toLowerCase(),
           difficulty: difficulty.toLowerCase(),
-          triviaCategoryId: triviaId
+          questionCount: config.questions,
         });
 
         if (genRes.success) {
-          activeQuizId = genRes.data._id;
-          playRes = { success: true, data: genRes.data };
-        }
-
-        if (playRes && playRes.success) {
-          setQuizId(activeQuizId)
-          setQuestions(playRes.data.questions)
-          setAnswers(Array(playRes.data.questions.length).fill(null))
-          setTaggedQuestions(Array(playRes.data.questions.length).fill(false))
-          setIsOfflineAttempt(false)
-          if (playRes.data.timeLimitSeconds) {
-            setTimeLeft(playRes.data.timeLimitSeconds)
+          setQuizId(genRes.data.quizId);
+          setQuestions(genRes.data.questions);
+          setAnswers(Array(genRes.data.questions.length).fill(null));
+          setTaggedQuestions(Array(genRes.data.questions.length).fill(false));
+          if (genRes.data.timeLimitSeconds) {
+            setTimeLeft(genRes.data.timeLimitSeconds);
           }
         } else {
-          loadLocalFallback(false)
+          setError(genRes.error || "Failed to generate quiz. Please try again.");
         }
       } catch (err) {
-        console.error("Failed to load quiz from API, loading local fallback.", err)
-        loadLocalFallback(false)
+        console.error("Quiz generation failed:", err);
+        if (err.status === 401) {
+          setError("Authentication failed. Please log in again.");
+        } else if (err.status === 429) {
+          setError("Quota exceeded. Please try later.");
+        } else {
+          setError("Something went wrong. Please refresh and try again.");
+        }
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadQuiz()
-  }, [subject, difficulty])
+    loadQuiz();
+  }, [subject, difficulty, config, navigate]);
 
-  // 2. Submit Attempt Handler
+  // 2. Handle quiz submission
   const handleSubmit = useCallback(async () => {
-    setLoading(true)
-    setIsGrading(true)
-    const timeTakenSeconds = config.time - timeLeft
+    setIsGrading(true);
+    const timeTakenSeconds = config.time - timeLeft;
 
-    if (!isOfflineAttempt) {
-      try {
-        // Prepare submission payload for backend
-        const formattedAnswers = answers.map((ans, idx) => {
-          const q = questions[idx]
-          return {
-            questionId: q._id,
-            selectedOptionId: ans ? ans.selectedOptionId : null // submit null for skipped/unanswered questions
-          }
-        })
-
-        const submitRes = await api.submitAttempt({
-          quizId,
-          answers: formattedAnswers,
-          timeTakenSeconds
-        })
-
-        if (submitRes.success) {
-          const attemptResult = submitRes.data
-          
-          // Fetch full quiz with correct answers to show in review
-          const reviewRes = await api.getQuizForReview(quizId)
-          let reviewQuestions = questions.map((q, idx) => {
-            const correctIdx = reviewRes.data.questions[idx].options.findIndex(o => o.isCorrect)
-            return {
-              question: q.questionText,
-              options: q.options.map(o => o.text),
-              correct: correctIdx >= 0 ? correctIdx : 0,
-              // Use explanation from play response (already included), fallback to review response
-              explanation: q.explanation || reviewRes.data.questions[idx].explanation || "No explanation provided."
-            }
-          })
-
-          navigate("/score", {
-            state: {
-              score: attemptResult.score,
-              total: attemptResult.totalQuestions,
-              subject: subjectName,
-              difficulty: config.label,
-              answers: answers.map(a => a ? a.selectedOptionIndex : -1),
-              questions: reviewQuestions,
-              isOffline: false,
-              tagged: taggedQuestions
-            }
-          })
-        }
-      } catch (err) {
-        console.error("Failed to submit online attempt. Saving locally...", err)
-        submitOfflineLocal(timeTakenSeconds)
-      }
-    } else {
-      // Local grading for offline attempt
-      submitOfflineLocal(timeTakenSeconds)
-    }
-  }, [answers, questions, quizId, isOfflineAttempt, timeLeft, config, subjectName, navigate, taggedQuestions])
-
-  const submitOfflineLocal = (timeTakenSeconds) => {
-    // Grade locally
-    const offlineQuizData = getOfflineQuiz(subject, difficulty)
-    let localScore = 0
-
-    const gradedQuestions = questions.map((q, idx) => {
-      // Get correct index from our offline fallback quiz data structure
-      const correctIdx = offlineQuizData.questions[idx] 
-        ? offlineQuizData.questions[idx].correctOptionIndex 
-        : 0
-
-      const userAns = answers[idx]
-      const isCorrect = userAns && userAns.selectedOptionIndex === correctIdx
-      if (isCorrect) localScore++
-
-      return {
-        question: q.questionText,
-        options: q.options.map(o => o.text),
-        correct: correctIdx,
-        explanation: (offlineQuizData.questions[idx] && offlineQuizData.questions[idx].explanation) || "Verified locally by the offline database."
-      }
-    })
-
-    // Store in offline sync queue
-    const attemptPayload = {
-      quizId,
-      subject: subjectName,
-      difficulty: config.label,
-      score: localScore,
-      totalPossible: questions.length,
-      timeTakenSeconds,
-      answers: answers.map((ans, idx) => ({
+    try {
+      const formattedAnswers = answers.map((ans, idx) => ({
         questionId: questions[idx]._id,
         selectedOptionId: ans ? ans.selectedOptionId : null,
-        selectedOptionIndex: ans ? ans.selectedOptionIndex : -1
-      })),
-      createdAt: new Date().toISOString()
-    }
+      }));
 
-    // Only queue offline sync for registered users who are actually offline
-    if (!isGuestMode() && isOfflineAttempt) {
-      queueOfflineAttempt(attemptPayload)
-    }
+      const submitRes = await api.submitAttempt({
+        quizId,
+        answers: formattedAnswers,
+        timeTakenSeconds,
+      });
 
-    navigate("/score", {
-      state: {
-        score: localScore,
-        total: questions.length,
-        subject: subjectName,
-        difficulty: config.label,
-        answers: answers.map(a => a ? a.selectedOptionIndex : -1),
-        questions: gradedQuestions,
-        isOffline: !isGuestMode() && isOfflineAttempt,
-        tagged: taggedQuestions
+      if (submitRes.success) {
+        // Fetch review data (includes correct answers and explanations)
+        const reviewRes = await api.getQuizForReview(quizId);
+        const reviewQuestions = questions.map((q, idx) => {
+          const correctIdx = reviewRes.data.questions[idx].options.findIndex(o => o.isCorrect);
+          return {
+            question: q.questionText,
+            options: q.options.map(o => o.text),
+            correct: correctIdx >= 0 ? correctIdx : 0,
+            explanation: q.explanation || reviewRes.data.questions[idx].explanation || "No explanation provided.",
+          };
+        });
+
+        navigate("/score", {
+          state: {
+            score: submitRes.data?.score ?? 0,
+            total: submitRes.data?.totalQuestions ?? submitRes.data?.totalPossible ?? 0, // ✅ Fallback
+            subject: subjectName || "Unknown",
+            difficulty: config.label || "Easy",
+            answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
+            questions: reviewQuestions || [],
+            isOffline: false,
+            tagged: taggedQuestions || [],
+          },
+        });
+      } else {
+        setError(submitRes.error || "Submission failed. Please try again.");
       }
-    })
-  }
+    } catch (err) {
+      console.error("Submit failed:", err);
+      if (err.status === 401) {
+        setError("Session expired. Please log in again.");
+      } else {
+        setError("Failed to submit quiz. Please check your connection.");
+      }
+    } finally {
+      setIsGrading(false);
+    }
+  }, [answers, questions, quizId, timeLeft, config, subjectName, navigate, taggedQuestions]);
 
-  // 3. Timer Effect
+  // 3. Timer effect – auto-submit when time runs out
   useEffect(() => {
-    if (loading) return
-    if (timeLeft <= 0) { handleSubmit(); return }
-    const id = setInterval(() => setTimeLeft(t => t - 1), 1000)
-    return () => clearInterval(id)
-  }, [timeLeft, handleSubmit, loading])
+    if (loading) return;
+    if (timeLeft <= 0) {
+      handleSubmit();
+      return;
+    }
+    const id = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    return () => clearInterval(id);
+  }, [timeLeft, handleSubmit, loading]);
 
+  // ---- Render logic ----
+  // (the rest of the component stays the same)
   if (loading) {
     const subjectLower = (subject || "").toLowerCase();
     let icon = "✦";
@@ -265,10 +198,10 @@ export default function QuizPage() {
     else if (subjectLower.includes("cpp") || subjectLower.includes("c++")) icon = "⚙";
     else if (subjectLower.includes("algorithms")) icon = "🔄";
     else if (subjectLower.includes("database") || subjectLower.includes("sql")) icon = "🗄";
-    
+
     const loaderTitle = isGrading ? "Analyzing Your Performance" : "Preparing Your Quiz Environment";
-    const loaderText = isGrading 
-      ? "Grading your answers and generating AI explanations..." 
+    const loaderText = isGrading
+      ? "Grading your answers and generating AI explanations..."
       : `Fetching high-quality questions on ${subjectName || subject}...`;
 
     return (
@@ -281,56 +214,73 @@ export default function QuizPage() {
           <p className="quiz-loader-text">{loaderText}</p>
         </div>
       </div>
-    )
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="quiz-page" style={{ justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <div className="quiz-loader-card" style={{ border: "2px solid var(--red)" }}>
+          <h3 style={{ color: "var(--red)" }}>⚠️ Error</h3>
+          <p>{error}</p>
+          <button className="btn-quiz-prev" onClick={() => navigate("/quiz-menu")} style={{ marginTop: "20px" }}>
+            Back to Menu
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (questions.length === 0) {
     return (
       <div className="quiz-page" style={{ justifyContent: "center", alignItems: "center" }}>
         <p className="no-activity">No questions available for this quiz. Please go back.</p>
-        <button className="btn-quiz-prev" onClick={() => navigate("/quiz-menu")} style={{ marginTop: "20px" }}>Back to Menu</button>
+        <button className="btn-quiz-prev" onClick={() => navigate("/quiz-menu")} style={{ marginTop: "20px" }}>
+          Back to Menu
+        </button>
       </div>
-    )
+    );
   }
 
-  const q           = questions[current]
-  const progress    = ((current + 1) / questions.length) * 100
-  const timePercent = (timeLeft / config.time) * 100
-  const timerColor  = timePercent > 50 ? "var(--green)" : timePercent > 20 ? "var(--orange)" : "var(--red)"
+  const q = questions[current];
+  const progress = ((current + 1) / questions.length) * 100;
+  const timePercent = (timeLeft / config.time) * 100;
+  const timerColor = timePercent > 50 ? "var(--green)" : timePercent > 20 ? "var(--orange)" : "var(--red)";
 
-  function handleOption(optId, optIdx) {
-    setSelectedOptId(optId)
-    const nextAnswers = [...answers]
+  const handleOption = (optId, optIdx) => {
+    setSelectedOptId(optId);
+    const nextAnswers = [...answers];
     nextAnswers[current] = {
       questionId: q._id,
       selectedOptionId: optId,
-      selectedOptionIndex: optIdx
-    }
-    setAnswers(nextAnswers)
-  }
+      selectedOptionIndex: optIdx,
+    };
+    setAnswers(nextAnswers);
+  };
 
-  function goNext() {
+  const goNext = () => {
     if (current < questions.length - 1) {
-      setCurrent(c => c + 1)
-      const nextAns = answers[current + 1]
-      setSelectedOptId(nextAns ? nextAns.selectedOptionId : null)
+      setCurrent(c => c + 1);
+      const nextAns = answers[current + 1];
+      setSelectedOptId(nextAns ? nextAns.selectedOptionId : null);
     }
-  }
+  };
 
-  function goPrev() {
+  const goPrev = () => {
     if (current > 0) {
-      setCurrent(c => c - 1)
-      const prevAns = answers[current - 1]
-      setSelectedOptId(prevAns ? prevAns.selectedOptionId : null)
+      setCurrent(c => c - 1);
+      const prevAns = answers[current - 1];
+      setSelectedOptId(prevAns ? prevAns.selectedOptionId : null);
     }
-  }
+  };
 
-  function toggleTag() {
-    const nextTags = [...taggedQuestions]
-    nextTags[current] = !nextTags[current]
-    setTaggedQuestions(nextTags)
-  }
+  const toggleTag = () => {
+    const nextTags = [...taggedQuestions];
+    nextTags[current] = !nextTags[current];
+    setTaggedQuestions(nextTags);
+  };
 
+  // Pre-submit review screen
   if (showPreSubmitReview) {
     return (
       <div className="quiz-page">
@@ -350,17 +300,17 @@ export default function QuizPage() {
 
               <div className="review-grid">
                 {questions.map((q, idx) => {
-                  const ans = answers[idx]
-                  const tagged = taggedQuestions[idx]
-                  let stateClass = "unanswered"
-                  let stateLabel = "Unanswered"
-                  
+                  const ans = answers[idx];
+                  const tagged = taggedQuestions[idx];
+                  let stateClass = "unanswered";
+                  let stateLabel = "Unanswered";
+
                   if (tagged) {
-                    stateClass = "flagged"
-                    stateLabel = "Flagged"
+                    stateClass = "flagged";
+                    stateLabel = "Flagged";
                   } else if (ans) {
-                    stateClass = "answered"
-                    stateLabel = "Answered"
+                    stateClass = "answered";
+                    stateLabel = "Answered";
                   }
 
                   return (
@@ -372,7 +322,7 @@ export default function QuizPage() {
                       <span className="review-cell-num">{idx + 1}</span>
                       <span className="review-cell-state">{tagged ? "🚩" : stateLabel}</span>
                     </button>
-                  )
+                  );
                 })}
               </div>
 
@@ -394,7 +344,6 @@ export default function QuizPage() {
           </div>
         </div>
 
-        {/* Cancel modal */}
         {showCancel && (
           <div className="cancel-overlay">
             <div className="cancel-modal">
@@ -408,17 +357,16 @@ export default function QuizPage() {
           </div>
         )}
       </div>
-    )
+    );
   }
 
+  // Main quiz view
   return (
     <div className="quiz-page">
-
-      {/* Top bar */}
       <div className="quiz-topbar">
         <div className="quiz-topbar-info">
           <div className="quiz-topbar-sub">
-            {subjectName} {isOfflineAttempt && <span className="offline-pill">Offline Play</span>}
+            {subjectName}
           </div>
           <div className="quiz-topbar-label" style={{ color: config.color }}>
             {config.label} · Q {current + 1} / {questions.length}
@@ -437,18 +385,16 @@ export default function QuizPage() {
         </div>
       </div>
 
-      {/* Progress bar */}
       <div className="quiz-progress-bar-wrap">
         <div className="quiz-progress-bar" style={{ width: `${progress}%` }} />
       </div>
 
-      {/* Question area */}
       <div className="quiz-body">
         <div className="quiz-content">
           <div className="quiz-question-card">
             <div className="quiz-q-header">
               <span className="quiz-q-label">Question {current + 1} of {questions.length}</span>
-              <button 
+              <button
                 className={`btn-tag-question${taggedQuestions[current] ? " active" : ""}`}
                 onClick={toggleTag}
               >
@@ -479,7 +425,6 @@ export default function QuizPage() {
         </div>
       </div>
 
-      {/* Cancel modal */}
       {showCancel && (
         <div className="cancel-overlay">
           <div className="cancel-modal">
@@ -492,7 +437,6 @@ export default function QuizPage() {
           </div>
         </div>
       )}
-
     </div>
-  )
+  );
 }

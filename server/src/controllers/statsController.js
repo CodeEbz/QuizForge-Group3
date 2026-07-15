@@ -4,9 +4,7 @@ const asyncHandler = require('../utils/asyncHandler');
 
 /**
  * @route   GET /api/stats/me
- * @desc    Aggregate statistics for the logged-in user:
- *          total attempts, average score/percentage, best score,
- *          and their most recent attempts for a quick history view.
+ * @desc    Aggregate statistics for the logged-in user
  * @access  Private
  */
 const getMyStats = asyncHandler(async (req, res) => {
@@ -37,7 +35,7 @@ const getMyStats = asyncHandler(async (req, res) => {
   ]);
 
   const recentAttempts = await Attempt.find({ user: userId })
-    .populate('quiz', 'title category difficulty')
+    .populate('quiz', 'title subject difficulty')
     .sort({ createdAt: -1 })
     .limit(100)
     .select('score totalPossible percentage timeTakenSeconds createdAt quiz');
@@ -59,12 +57,9 @@ const getMyStats = asyncHandler(async (req, res) => {
         percentage: a.percentage,
         timeTakenSeconds: a.timeTakenSeconds,
         createdAt: a.createdAt,
-        quiz: a.quiz ? {
-          _id: a.quiz._id,
-          title: a.quiz.title,
-          category: a.quiz.category,
-          difficulty: a.quiz.difficulty
-        } : null
+        // ✅ Use subject from the populated quiz
+        subject: a.quiz ? a.quiz.subject : 'Other',
+        difficulty: a.quiz ? a.quiz.difficulty : 'medium',
       }))
     },
   });
@@ -72,8 +67,7 @@ const getMyStats = asyncHandler(async (req, res) => {
 
 /**
  * @route   GET /api/stats/quiz/:quizId
- * @desc    Aggregate stats for how the logged-in user has performed
- *          specifically on ONE quiz (useful for "your progress" views).
+ * @desc    Aggregate stats for how the logged-in user has performed on one quiz
  * @access  Private
  */
 const getMyStatsForQuiz = asyncHandler(async (req, res) => {

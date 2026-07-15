@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import Navbar from "../components/Navbar"
 import { api, isGuestMode } from "../services/api"
-import { registerOnlineSync, syncOfflineAttempts } from "../services/offlineSync"
 import "../styles/Dashboard.css"
 
 export default function Dashboard() {
@@ -18,9 +17,14 @@ export default function Dashboard() {
   })
   const [recentActivity, setRecentActivity] = useState([])
   const [topPlayers, setTopPlayers] = useState([])
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
-  const [syncStatus, setSyncStatus] = useState("")
   const [apiError, setApiError] = useState("")
+
+  // ✅ Helper: format percentage to whole number (or 2 decimals if needed)
+  const formatPercentage = (value) => {
+    if (value === undefined || value === null) return 0
+    return Math.round(value) // Clean whole number
+    // return Number(value).toFixed(2) // Use this if you want 2 decimals
+  }
 
   // Re-fetch every time we navigate back to dashboard (e.g. after finishing a quiz)
   useEffect(() => {
@@ -55,8 +59,8 @@ export default function Dashboard() {
           setRecentActivity((statsRes.data.recentAttempts || []).slice(0, 5))
         }
 
-        // Fetch Leaderboard top players
-        const lbRes = await api.getLeaderboard(3)
+        // Fetch Leaderboard top 5 players
+        const lbRes = await api.getLeaderboard(5)
         if (lbRes.success) {
           setTopPlayers(lbRes.data)
         }
@@ -66,38 +70,9 @@ export default function Dashboard() {
       }
     }
 
-    // 3. Register online status listeners
-    const handleStatusChange = () => {
-      setIsOnline(navigator.onLine)
-    }
-    window.addEventListener("online", handleStatusChange)
-    window.addEventListener("offline", handleStatusChange)
-
-    // 4. Auto sync offline attempts on mount / reconnect (only for registered users)
-    const unregisterSync = !isGuestMode() ? registerOnlineSync(async (syncResult) => {
-      setSyncStatus(`Synced ${syncResult.synced} offline quizzes successfully!`)
-      setTimeout(() => setSyncStatus(""), 5000)
-      await fetchDashboardData()
-    }) : () => {}
-
-    // Sync immediately on mount if online and registered
-    if (navigator.onLine && !isGuestMode()) {
-      syncOfflineAttempts().then((syncResult) => {
-        if (syncResult && syncResult.synced > 0) {
-          setSyncStatus(`Synced ${syncResult.synced} offline quizzes successfully!`)
-          setTimeout(() => setSyncStatus(""), 5000)
-          fetchDashboardData()
-        }
-      }).catch(err => console.error("Error syncing offline attempts on mount:", err))
-    }
-
     fetchDashboardData()
 
-    return () => {
-      window.removeEventListener("online", handleStatusChange)
-      window.removeEventListener("offline", handleStatusChange)
-      unregisterSync()
-    }
+    return () => {}
   }, [location.pathname])
 
   function scoreColor(pct) {
@@ -117,21 +92,9 @@ export default function Dashboard() {
     <div className="dashboard-page">
       <Navbar />
       <main className="dashboard-main">
-
-        {/* Offline & Sync Banners */}
-        {!isOnline && (
-          <div className="offline-banner">
-            ⚠️ You are running offline. Quizzes can be played and progress will sync once reconnected.
-          </div>
-        )}
-        {apiError && isOnline && (
+        {apiError && (
           <div className="offline-banner" style={{ background: '#1e0808', borderColor: '#dc2626' }}>
             ⚠️ {apiError}
-          </div>
-        )}
-        {syncStatus && (
-          <div className="sync-banner">
-            ✨ {syncStatus}
           </div>
         )}
 
@@ -169,26 +132,33 @@ export default function Dashboard() {
           <div className="dashboard-card">
             <div className="dashboard-card-header">
               <span className="dashboard-card-title">Recent Activity</span>
-              <button className="link-btn" onClick={() => navigate("/statistics")}>View all →</button>
+              <button className="link-btn" onClick={() => navigate("/history")}>View History →</button>
             </div>
             <div className="activity-list">
               {recentActivity.length === 0 ? (
                 <p className="no-activity">No quizzes taken yet. Click 'Start a Quiz' to begin!</p>
               ) : (
-                recentActivity.map((a, i) => (
-                  <div key={i} className="activity-row">
-                    <div>
-                      <div className="activity-subject">{a.quiz ? a.quiz.title : (a.subject ? `${a.subject} Quiz` : "Quiz")}</div>
-                      <div className="activity-meta">
-                        {a.quiz ? `${a.quiz.category} · ${a.quiz.difficulty}` : `${a.subject || "General"} · ${a.difficulty || "easy"}`} · {new Date(a.createdAt).toLocaleDateString()}
+                recentActivity.map((a, i) => {
+                  // ✅ Round percentage for display
+                  const roundedPct = formatPercentage(a.percentage)
+                  return (
+                    <div key={i} className="activity-row">
+                      <div>
+                        <div className="activity-subject">{a.quiz ? a.quiz.title : (a.subject ? `${a.subject} Quiz` : "Quiz")}</div>
+                        <div className="activity-meta">
+                          {a.quiz
+                            ? `${a.quiz.subject || a.quiz.category || "General"} · ${a.quiz.difficulty}`
+                            : `${a.subject || "General"} · ${a.difficulty || "easy"}`
+                          } · {new Date(a.createdAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="activity-score" style={{ color: scoreColor(roundedPct) }}>{roundedPct}%</div>
+                        <div className="activity-score-raw">{a.score}/{a.totalPossible}</div>
                       </div>
                     </div>
-                    <div>
-                      <div className="activity-score" style={{ color: scoreColor(a.percentage) }}>{a.percentage}%</div>
-                      <div className="activity-score-raw">{a.score}/{a.totalPossible}</div>
-                    </div>
-                  </div>
-                ))
+                  )
+                })
               )}
             </div>
           </div>
@@ -203,12 +173,14 @@ export default function Dashboard() {
               {topPlayers.length === 0 ? (
                 <p className="no-activity">Standings are loading...</p>
               ) : (
-                topPlayers.slice(0, 3).map((p, idx) => {
+                topPlayers.slice(0, 5).map((p, idx) => {
                   const isYou = user.name === p.name;
                   return (
                     <div key={idx} className={`mini-lb-row${isYou ? " is-you" : ""}`}>
                       <span className="mini-lb-badge">
-                        {idx === 0 ? "🥇" : idx === 1 ? "🥈" : "🥉"}
+                        {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : (
+                          <span className="mini-lb-rank">{idx + 1}</span>
+                        )}
                       </span>
                       <div>
                         <div className="mini-lb-name">{p.name} {isYou && "(you)"}</div>
@@ -219,9 +191,6 @@ export default function Dashboard() {
                 })
               )}
             </div>
-            <button className="btn-play-now" onClick={() => navigate("/leaderboard")}>
-              View Full Standings
-            </button>
           </div>
 
         </div>

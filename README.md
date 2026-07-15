@@ -1,13 +1,11 @@
-# ⚡ QuizForge - Full-Stack Interactive PWA Quiz Application
+# ⚡ QuizForge - AI-Powered Full-Stack Quiz Application
 
 [![MERN Stack](https://img.shields.io/badge/Stack-MERN-blue.svg)](https://mongodb.com)
 [![Vite](https://img.shields.io/badge/Frontend-Vite%20%2B%20React-646CFF.svg)](https://vitejs.dev)
-[![PWA](https://img.shields.io/badge/PWA-Offline%20Ready-success.svg)](#-offline-capabilities--syncing-flow)
+[![AI](https://img.shields.io/badge/AI-Groq-FF6F00.svg)](https://groq.com)
 [![License](https://img.shields.io/badge/License-ISC-green.svg)](https://opensource.org/licenses/ISC)
 
-QuizForge is a full-stack interactive quiz application built on the MERN stack (MongoDB, Express, React, Node.js) with first-class **Progressive Web App (PWA) Offline Capabilities**. 
-
-It allows users to register accounts, track personal learning statistics, climb the global leaderboard, and take quizzes on various computer science topics. If the user loses network connection, QuizForge automatically transitions to offline mode, allowing them to play cached/static quizzes and storing attempts locally to sync with the database once reconnected.
+**QuizForge** is a full-stack interactive quiz application built on the MERN stack (MongoDB, Express, React, Node.js) that leverages **Groq's AI models** to dynamically generate programming and computer science questions. Users can register accounts, track personal learning statistics, climb the global leaderboard, and take quizzes on 15+ subjects with AI-generated explanations.
 
 ---
 
@@ -18,19 +16,22 @@ It allows users to register accounts, track personal learning statistics, climb 
 - [🔌 API Endpoints](#-api-endpoints)
 - [👥 Team Roles & Task Division](#-team-roles--task-division)
 - [🚀 Local Installation & Setup](#-local-installation--setup)
-- [📶 Offline Capabilities & Syncing Flow](#-offline-capabilities--syncing-flow)
 - [🌐 Production Deployment Guide](#-production-deployment-guide)
 
 ---
 
 ## ✨ Key Features
-* **PWA & Offline-First Design**: Caches the application shell using a Service Worker. Works completely offline.
-* **Local Grading Fallback**: Automatically grades attempts locally when offline and stores them in `localStorage`.
-* **Auto-Syncing Mechanism**: Detects when the user comes back online and synchronizes local attempts with the database.
-* **Secure Authentication**: Uses JSON Web Tokens (JWT) stored securely, with input validation and rate limiting.
-* **Interactive Dashboards**: Dynamic landing hub displaying summary statistics and recent attempt history.
-* **Global Leaderboard**: Live-updating rankings based on user scores.
-* **Performance Graphs**: Visual categorization of performance metrics by category and difficulty.
+
+* **AI-Generated Quizzes**: Uses Groq's Llama 3.1 models to generate unique, topic-specific questions on demand.
+* **15+ Subjects**: JavaScript, React, Python, Algorithms, Data Structures, HTML, CSS, MongoDB, Node.js, Express, Java, C++, C#, SQL, and more.
+* **3 Difficulty Levels**: Easy (20 Qs), Medium (30 Qs), Hard (50 Qs) with built-in timers.
+* **Instant Scoring & Explanations**: Automatic grading with detailed answer reviews and AI-generated explanations.
+* **Guest Mode**: Instantly explore the platform without registration – choose from a curated set of predefined quizzes.
+* **Secure Authentication**: JWT-based authentication with password hashing (bcrypt) and input validation.
+* **Interactive Dashboards**: Dynamic landing hub displaying summary statistics, recent attempt history, and global leaderboard.
+* **Performance Analytics**: Visual breakdown of performance by subject and difficulty.
+* **Flag for Review**: Mark questions you're unsure about and revisit them during review.
+* **Responsive UI**: Works seamlessly across desktop and mobile devices.
 
 ---
 
@@ -40,227 +41,227 @@ It allows users to register accounts, track personal learning statistics, climb 
 * **Core**: React 19, React Router DOM v7
 * **Build Tool**: Vite, ESLint
 * **Styling**: Vanilla CSS (Responsive, Modern CSS variables)
-* **PWA**: Custom Service Worker caching (`sw.js`)
+* **State Management**: React Hooks (useState, useEffect, useCallback, useRef)
 
 ### Backend & Database
 * **Server**: Express, Node.js
 * **Database**: MongoDB, Mongoose ODM
 * **Security & Middleware**: Helmet, CORS, Express Rate Limit, Morgan, BCryptJS, JSONWebToken
+* **AI Integration**: Groq SDK (llama-3.1-8b-instant / llama-3.3-70b-versatile)
+* **Fallback API**: Open Trivia DB (Category 18 – Computers)
 * **Validation**: Express Validator
 
 ---
 
 ## 📂 Project Architecture
 
-The repository is structured as two distinct, isolated sub-projects:
+The repository is structured as two distinct, isolated sub‑projects:
 
 ### 📱 Client (`client/`)
-Contains the React frontend, static assets, styling, and service worker configuration.
+Contains the React frontend, static assets, styling, and API service layer.
+
 ```text
 client/
 ├── public/
 │   ├── favicon.ico
-│   └── sw.js                     # PWA Service worker handles caching and fetch routing
+│   └── index.html
 ├── src/
 │   ├── assets/                   # Static images and logo resources
 │   ├── components/
-│   │   ├── Logo.jsx              # Reusable vector SVG Logo component
+│   │   ├── Logo.jsx              # Reusable SVG Logo component
 │   │   └── Navbar.jsx            # Dynamic and responsive navigation bar
 │   ├── data/
-│   │   └── offlineQuizzes.js     # Hardcoded quizzes for offline play
+│   │   └── guestQuizzes.js       # Predefined quizzes for Guest Mode
 │   ├── pages/
-│   │   ├── Auth.jsx              # Sign In and Sign Up page
-│   │   ├── Dashboard.jsx         # Hub for stats summaries and quiz lists
-│   │   ├── Difficulty.jsx        # Quiz difficulty selector screen
+│   │   ├── Auth.jsx              # Sign In / Sign Up page
+│   │   ├── Dashboard.jsx         # Hub for stats summaries and quiz listings
+│   │   ├── Difficulty.jsx        # Quiz difficulty selector
 │   │   ├── Leaderboard.jsx       # Global rankings list
-│   │   ├── Profile.jsx           # User details and log out actions
-│   │   ├── QuizMenu.jsx          # Topic-wise selector for quizzes
+│   │   ├── History.jsx           # User attempt history with review
+│   │   ├── QuizMenu.jsx          # Topic-wise selector
 │   │   ├── QuizPage.jsx          # Interactive quiz taking panel (questions, timer)
-│   │   ├── ScorePage.jsx         # Detailed grading scorecard and answers review
-│   │   └── Statistics.jsx        # Visual details of performance metrics
+│   │   ├── ScorePage.jsx         # Detailed grading scorecard and answer review
+│   │   └── Statistics.jsx        # Visual performance metrics by subject/difficulty
 │   ├── services/
-│   │   ├── api.js                # API request engine (handles headers, tokens, guest mock)
-│   │   └── offlineSync.js        # Background attempt manager synchronizing stored scores
-│   ├── styles/                   # Custom vanilla CSS modules for pages and components
-│   ├── App.jsx                   # Main layout routing configuration
-│   └── main.jsx                  # React application mount script with service worker hook
-```
+│   │   └── api.js                # API request engine (handles headers, tokens, guest mode)
+│   ├── styles/                   # Custom vanilla CSS modules
+│   ├── App.jsx                   # Main routing configuration
+│   └── main.jsx                  # React application mount
+
 
 ### ⚙ Server (`server/`)
-Contains the Express REST API and MongoDB schema definitions.
-```text
+Contains the Express REST API, MongoDB schemas, and AI integration services.
+
 server/
 ├── src/
-│   ├── config/
-│   │   └── db.js                 # Mongoose connection config
-│   ├── controllers/
-│   │   ├── attemptController.js  # Quiz submission grading and creation
-│   │   ├── authController.js     # User registration, login, and auth state
-│   │   ├── leaderboardController.js # Aggregations for user rankings
-│   │   ├── quizController.js     # Queries for quiz structures
-│   │   └── statsController.js    # Metric aggregations for user statistics
-│   ├── middleware/
-│   │   ├── authMiddleware.js     # Validates JWT bearer tokens
-│   │   ├── errorMiddleware.js    # Express central error handler
-│   │   └── validateMiddleware.js # Processes validation results
-│   ├── models/
-│   │   ├── Attempt.js            # User score attempt schema
-│   │   ├── Quiz.js               # Quiz and question structures schema
-│   │   └── User.js               # User information schema
-│   ├── routes/
-│   │   ├── attemptRoutes.js      # Routes for attempt creations
-│   │   ├── authRoutes.js         # Routes for login and authentication
-│   │   ├── leaderboardRoutes.js  # Routes for ranking requests
-│   │   ├── quizRoutes.js         # Routes for quiz listings
-│   │   └── statsRoutes.js        # Routes for statistics retrievals
-│   ├── utils/
-│   │   ├── ApiError.js           # Customized API exception classes
-│   │   ├── asyncHandler.js       # Express route try-catch wrapper
-│   │   ├── generateToken.js      # Creates JWT for authenticated users
-│   │   └── seed.js               # Database seeding script for quizzes
-│   └── validators/
-│       ├── attemptValidators.js  # Schemas for validating attempts
-│       ├── authValidators.js     # Schemas for validating registry forms
-│       └── quizValidators.js     # Schemas for validating quiz creations
-├── .env.example                  # Environment template file
-├── server.js                     # Root entry point of the Node application
-```
+│ ├── config/
+│ │ └── db.js # Mongoose connection config
+│ ├── controllers/
+│ │ ├── attemptController.js # Quiz submission grading and attempt creation
+│ │ ├── authController.js # User registration, login, and auth state
+│ │ ├── leaderboardController.js # Aggregations for user rankings
+│ │ ├── quizController.js # Queries for quiz structures
+│ │ ├── statsController.js # Metric aggregations for user statistics
+│ │ └── dynamicQuizController.js # AI-driven quiz generation
+│ ├── middleware/
+│ │ ├── authMiddleware.js # Validates JWT bearer tokens
+│ │ ├── errorMiddleware.js # Express central error handler
+│ │ └── validateMiddleware.js # Processes validation results
+│ ├── models/
+│ │ ├── Attempt.js # User attempt schema (with subject/difficulty)
+│ │ ├── Quiz.js # Quiz and question structures
+│ │ └── User.js # User information schema
+│ ├── routes/
+│ │ ├── attemptRoutes.js # Routes for attempt submissions and history
+│ │ ├── authRoutes.js # Routes for login and registration
+│ │ ├── leaderboardRoutes.js # Routes for ranking requests
+│ │ ├── quizRoutes.js # Routes for quiz listings and generation
+│ │ └── statsRoutes.js # Routes for statistics retrievals
+│ ├── services/
+│ │ ├── groqService.js # Integration with Groq AI API
+│ │ └── triviaService.js # Fallback service using Open Trivia DB
+│ ├── utils/
+│ │ ├── ApiError.js # Custom API exception classes
+│ │ ├── asyncHandler.js # Express route try-catch wrapper
+│ │ ├── generateToken.js # Creates JWT for authenticated users
+│ │ └── seed.js # Database seeding script for static quizzes
+│ └── validators/
+│ ├── attemptValidators.js # Schemas for validating attempts
+│ ├── authValidators.js # Schemas for validating registry forms
+│ └── quizValidators.js # Schemas for validating quiz creations
+├── .env.example # Environment template
+└── server.js # Root entry point
+
+text
 
 ---
 
 ## 🔌 API Endpoints
 
-All endpoints are prefixed with `/api` and require a `Bearer <token>` token in the `Authorization` header once authenticated.
+All endpoints are prefixed with `/api` and require a `Bearer <token>` in the `Authorization` header once authenticated (except auth endpoints).
 
 | Resource | HTTP Method | Path | Description | Authentication |
 |---|---|---|---|---|
 | **Auth** | POST | `/auth/register` | Register a new user | None |
-| | POST | `/auth/login` | Log in existing user and return JWT | None |
+| | POST | `/auth/login` | Log in and return JWT | None |
 | | GET | `/auth/me` | Retrieve authenticated user profile | Required |
-| **Quizzes**| GET | `/quizzes` | Fetch list of quizzes (supports `category` & `difficulty` query filters) | Required |
-| | GET | `/quizzes/:id` | Fetch full quiz details (with correct answers for review) | Required |
+| **Quizzes**| POST | `/quizzes/generate` | Generate a new AI-powered quiz (subject, difficulty, count) | Required |
 | | GET | `/quizzes/:id/play`| Fetch quiz details (stripped of answers for play) | Required |
+| | GET | `/quizzes/:id/review`| Fetch quiz with correct answers for review | Required |
 | **Attempts**| POST | `/attempts` | Submit answers for grading and log attempt | Required |
+| | GET | `/attempts/my` | Get current user's attempt history | Required |
 | **Stats** | GET | `/stats/me` | Fetch detailed aggregated stats for current user | Required |
-| **Leaderboard**| GET | `/leaderboard` | Get global ranks (supports `limit` query param) | Required |
+| **Leaderboard**| GET | `/leaderboard` | Get global ranks (supports `limit` param) | Required |
 
 ---
 
 ## 👥 Team Roles & Task Division
 
-Below is the official breakdown of the contributors in Group 3 and their contributions to the project:
-
 ### 👑 Project Management & Coordination
 * **Eno** (*Project Coordinator*):
-  - Directed team communications, scheduled project checkpoints, aligned frontend/backend milestones, and supervised the end-to-end integration and delivery process.
+  - Directed team communications, scheduled project checkpoints, aligned frontend/backend milestones, and supervised end-to-end integration and delivery.
 
 ### 💻 Frontend Development Team
-* **Ali & Queen** (*Auth page*):
-  - Programmed the registration and login interface ([Auth.jsx](client/src/pages/Auth.jsx)). Structured form state binds, integrated password reset flow, and client with backend `/api/auth` endpoints.
-* **Isaac** (*Dashboard page*):
-  - Coded the main welcome landing hub ([Dashboard.jsx](client/src/pages/Dashboard.jsx)), integrating dynamic statistics summaries, recent activity feeds, and mini-leaderboard hooks.
-* **Esther & Fola** (*Quiz page*):
-  - Built the core test-taking view ([QuizPage.jsx](client/src/pages/QuizPage.jsx)) managing local option selection arrays, timer decrements, and dynamic navigation.
-* **Maxwell** (*Score page*):
-  - Built the results scorecard ([ScorePage.jsx](client/src/pages/ScorePage.jsx)), displaying correct/wrong counts, grading percentages, and a full option-by-option answer review table.
-* **Onovo** (*Statistics page*):
-  - Authored the metrics panel ([Statistics.jsx](client/src/pages/Statistics.jsx)), creating responsive graphical percentage tracks grouped by category and difficulty boxes.
-* **Ayo & Nath** (*Profile page*):
-  - Programmed the account details settings page ([Profile.jsx](client/src/pages/Profile.jsx)), enabling display name edits, password mocks, and clear session logouts.
+* **Ali & Queen** (*Auth Page*):
+  - Implemented the registration and login interface (`Auth.jsx`), integrated with backend `/api/auth` endpoints, form validation, and password reset mock-up.
+* **Isaac** (*Dashboard Page*):
+  - Built the main landing hub (`Dashboard.jsx`), integrating dynamic statistics, recent activity feeds, and mini-leaderboard.
+* **Esther & Fola** (*Quiz Page*):
+  - Developed the core test-taking view (`QuizPage.jsx`), managing local state for answers, timer, navigation, and flagging questions.
+* **Maxwell** (*Score Page*):
+  - Created the results scorecard (`ScorePage.jsx`) with correct/wrong breakdowns, percentage display, and detailed answer review.
+* **Onovo** (*Statistics Page*):
+  - Authored the metrics panel (`Statistics.jsx`) with subject-based performance bars and difficulty breakdown.
+* **Ayo & Nath** (*Profile Page*):
+  - Programmed the account details settings page (`Profile.jsx`) enabling display name edits and logout actions.
 * **Oluwafaloba** (*UI/UX Design & Styling*):
-  - Designed the premium dark theme system, glassmorphic layout wrappers, responsive top header navbar components, custom quiz generator widgets, and overall visual aesthetics across all app pages.
+  - Designed the premium dark theme, glassmorphic layout, responsive navbar, custom quiz widgets, and overall visual aesthetics.
 
 ### ⚙ Backend & System Integration Team
 * **Kelly** (*Backend Engineer*):
-  - Authored the modular Express app config ([app.js](server/src/app.js)) with security middlewares (`helmet`, CORS) and route controllers. Handled JWT generation, bcrypt password hashing, and user authentication protection.
+  - Authored the Express app with security middlewares (helmet, CORS, rate limiting) and route controllers. Implemented JWT authentication, bcrypt password hashing, and user protection middleware.
 * **Collins** (*Database Manager*):
-  - Managed schemas for MongoDB collections ([User.js](server/src/models/User.js), [Quiz.js](server/src/models/Quiz.js), [Attempt.js](server/src/models/Attempt.js)). Optimized query performances via composite indexes and structured the expanded seed data array.
-* **Neeza** (*DevOps, Deployment & Full-Stack/PWA Integration Engineer*):
-  - Structured development environment bindings (`.env`), set up deployment routes, and handled automated build validation scripts for client/server packages.
-  - Authored the service worker ([sw.js](client/public/sw.js)) for static asset caching.
-  - Programmed local grading fallbacks ([offlineQuizzes.js](client/src/data/offlineQuizzes.js)) and created the background attempts synchronization manager ([offlineSync.js](client/src/services/offlineSync.js)).
+  - Designed and maintained MongoDB schemas (User, Quiz, Attempt) with optimized indexes and seeding scripts.
+* **Neeza** (*AI Integration & Full-Stack Engineer*):
+  - Integrated Groq AI SDK (`groqService.js`) for dynamic question generation with Llama models, implemented fallback to Open Trivia DB for the "Other" category.
+  - Built the dynamic quiz generation endpoint and handled rate-limiting, chunked generation, and JSON parsing.
+  - Developed guest mode support with predefined static quizzes and API mocking.
 
 ---
 
 ## 🚀 Local Installation & Setup
 
-Follow these steps to run the full-stack system on your local machine:
-
 ### Prerequisites
-- Node.js (version 18 or higher recommended)
-- MongoDB instance running locally on port `27017`
+- Node.js (v18 or higher)
+- MongoDB (local instance or MongoDB Atlas)
 
 ### Step 1: Set up the Server
 1. Navigate to the server folder:
    ```bash
    cd server
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Initialize the environment variables:
-   - Copy `.env.example` to `.env` (a pre-configured `.env` is already supplied for local MongoDB at `mongodb://127.0.0.1:27017/QuizForge`).
-4. Seed the database with quizzes and users:
-   ```bash
-   npm run seed
-   ```
-5. Start the backend development server:
-   ```bash
-   npm run dev
-   ```
-   *The server will run on `http://localhost:5000`.*
+Install dependencies:
 
-### Step 2: Set up the Client
-1. Navigate to the client folder:
-   ```bash
-   cd ../client
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite React development server:
-   ```bash
-   npm run dev
-   ```
-   *The client will run on `http://localhost:5173`.*
+bash
+npm install
+Copy .env.example to .env and fill in your credentials:
 
----
+MONGODB_URI – your MongoDB connection string
 
-## 📶 Offline Capabilities & Syncing Flow
+JWT_SECRET – a strong random secret
 
-To verify that the offline play and background syncing systems are working properly:
+GROQ_API_KEY – your API key from Groq Console
 
-1. **Load Page**: Start both servers and open `http://localhost:5173` in Google Chrome or Microsoft Edge.
-2. **Authenticate**: Register a new account or Log In with seeded credentials (`admin@quizapp.com` / `password123`).
-3. **Simulate Offline**: Open Chrome DevTools (`F12`), navigate to the **Network** tab, and toggle the throttling dropdown from **No Throttling** to **Offline**.
-4. **Interact**: Reload the page. Notice that the application shell loads successfully via the Service Worker cache.
-5. **Dashboard Banner**: An orange warning banner will display on the dashboard: *"⚠️ You are running offline. Quizzes can be played and progress will sync once reconnected."*
-6. **Take Offline Quiz**: Go to **Quizzes**, select **JavaScript**, select **Easy**, and play the quiz.
-7. **Score Local Save**: Submit the quiz. You will see a success card: *"💾 Quiz Saved Offline. Your score was graded locally. It will auto-sync with the global leaderboard once your internet connection is restored."*
-8. **Restore Network**: Go back to DevTools and toggle **Offline** back to **No Throttling**.
-9. **Verify Sync**: The background listener detects the connection, uploads the graded attempt to MongoDB, and displays a green notification banner: *"✨ Synced 1 offline quizzes successfully!"*. The dashboard metrics will update automatically.
+Seed the database with initial quiz data (optional):
 
----
+bash
+npm run seed
+Start the backend development server:
 
-## 🌐 Production Deployment Guide
+bash
+npm run dev
+The server runs on http://localhost:5000.
 
-When you are ready to deploy live, follow these guidelines:
+Step 2: Set up the Client
+Navigate to the client folder:
 
-### Server Deployment (e.g., Render)
-1. Set up a free Web Service on Render pointing to your backend GitHub repository.
-2. In the Render environment configuration, define the following variables:
-   - `PORT`: `10000` (Render handles this automatically)
-   - `NODE_ENV`: `production`
-   - `MONGO_URI`: `mongodb+srv://<username>:<password>@<cluster>.mongodb.net/QuizForge?retryWrites=true&w=majority` (Your MongoDB Atlas connection URI)
-   - `JWT_SECRET`: A long, randomly generated secret string
-   - `CLIENT_ORIGINS`: Your Vercel frontend URL (e.g. `https://quizforge.vercel.app`)
+bash
+cd ../client
+Install dependencies:
 
-### Client Deployment (e.g., Vercel)
-1. Import your frontend directory (`client/`) to Vercel.
-2. Update the `API_BASE` in `client/src/services/api.js` to point to your live Render backend URL:
-   ```javascript
-   const API_BASE = "https://your-backend-service.onrender.com/api";
-   ```
-3. Deploy! Vercel will build the static PWA shell, compile the service worker, and distribute it globally via CDN.
+bash
+npm install
+Start the Vite React development server:
+
+bash
+npm run dev
+The client runs on http://localhost:5173.
+
+🌐 Production Deployment Guide
+Server Deployment (e.g., Render)
+Create a Web Service pointing to your backend repository.
+
+Set environment variables:
+
+PORT: 10000 (Render handles this)
+
+NODE_ENV: production
+
+MONGODB_URI: your MongoDB Atlas connection string
+
+JWT_SECRET: a long, randomly generated secret
+
+GROQ_API_KEY: your Groq API key
+
+CLIENT_ORIGINS: your frontend URL (e.g., https://quizforge.vercel.app)
+
+Client Deployment (e.g., Vercel)
+Import the client/ folder to Vercel.
+
+Update the API_BASE in client/src/services/api.js to point to your live backend:
+
+javascript
+const API_BASE = "https://your-backend-service.onrender.com/api";
+Deploy – Vercel will build the React app and serve it via CDN.
+
+Made with ❤️ by the QuizForge Team
+Last Updated: July 2026

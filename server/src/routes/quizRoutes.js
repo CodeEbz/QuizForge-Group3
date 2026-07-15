@@ -1,38 +1,13 @@
 const express = require('express');
 const router = express.Router();
-
-const {
-  createQuiz,
-  getQuizzes,
-  getQuizById,
-  getQuizForAttempt,
-  updateQuiz,
-  deleteQuiz,
-} = require('../controllers/quizController');
-const { generateQuiz } = require('../controllers/dynamicQuizController');
-const { createQuizValidator } = require('../validators/quizValidators');
-const validate = require('../middleware/validateMiddleware');
+const { generateDynamicQuiz } = require('../controllers/dynamicQuizController');
+const { getQuizForReview } = require('../controllers/quizController');
 const { protect } = require('../middleware/authMiddleware');
 
-// GET /api/quizzes - public list (metadata only)
-router.get('/', getQuizzes);
+// Generate a quiz
+router.post('/generate', protect, generateDynamicQuiz);
 
-// POST /api/quizzes/generate - generate a quiz dynamically (public with optional auth)
-router.post('/generate', generateQuiz);
-
-// POST /api/quizzes - create a quiz (must be logged in)
-router.post('/', protect, createQuizValidator, validate, createQuiz);
-
-// GET /api/quizzes/:id/play - sanitized version for taking the quiz
-router.get('/:id/play', protect, getQuizForAttempt);
-
-// GET /api/quizzes/:id - full detail (owner/admin use, includes answer key)
-router.get('/:id', protect, getQuizById);
-
-// PUT /api/quizzes/:id - update (owner or admin only, enforced in controller)
-router.put('/:id', protect, updateQuiz);
-
-// DELETE /api/quizzes/:id - delete (owner or admin only, enforced in controller)
-router.delete('/:id', protect, deleteQuiz);
+// ✅ Get quiz for review (after submission)
+router.get('/:id/review', protect, getQuizForReview);
 
 module.exports = router;

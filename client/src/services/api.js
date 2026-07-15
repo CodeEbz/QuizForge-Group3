@@ -50,7 +50,7 @@ export function isGuestMode() {
   return localStorage.getItem("quizforge_token") === "guest";
 }
 
-// Local mock data for guest mode (offline-first fallback)
+// Local mock data for guest mode
 const guestUser = {
   id: "guest-id",
   name: "Guest Explorer",
@@ -59,6 +59,7 @@ const guestUser = {
   createdAt: new Date().toISOString()
 };
 
+// --- API Object ---
 export const api = {
   /**
    * Log in user
@@ -95,7 +96,7 @@ export const api = {
    */
   async getQuizzes({ category, difficulty }) {
     if (isGuestMode()) {
-      return { success: true, data: [] }; // will fallback to static local quizzes
+      return { success: true, data: [] };
     }
     
     let url = "/quizzes?";
@@ -113,13 +114,13 @@ export const api = {
   },
 
   /**
-   * Get a full quiz (including correct answers) for review on the score page
+   * Get a quiz for review (with correct answers)
+   * ✅ FIXED: No extra /api in the endpoint
    */
-  async getQuizForReview(id) {
-    if (isGuestMode()) {
-      return { success: true, data: null };
-    }
-    return request(`/quizzes/${id}`);
+  getQuizForReview(quizId) {
+    return request(`/quizzes/${quizId}/review`, {
+      method: 'GET',
+    });
   },
 
   /**
@@ -127,7 +128,6 @@ export const api = {
    */
   async submitAttempt({ quizId, answers, timeTakenSeconds }) {
     if (isGuestMode()) {
-      // Local grading will be done in the frontend
       throw new Error("Guest attempts are computed locally");
     }
     return request("/attempts", {
@@ -141,7 +141,6 @@ export const api = {
    */
   async getStats() {
     if (isGuestMode()) {
-      // Guests get zeroed stats — no local storage reads/writes
       return {
         success: true,
         data: {
@@ -158,7 +157,6 @@ export const api = {
    */
   async getLeaderboard(limit = 10) {
     if (isGuestMode()) {
-      // Generate some default podium listings
       return {
         success: true,
         data: [
@@ -203,16 +201,22 @@ export const api = {
   },
 
   /**
-   * Generate a dynamic quiz from OpenAI or Open Trivia APIs
+   * Generate a dynamic quiz from Groq or Open Trivia APIs
+   * ✅ FIXED: Syntax error corrected
    */
-  async generateQuiz({ category, difficulty, triviaCategoryId }) {
+  async generateQuiz({ subject, difficulty, questionCount, triviaCategoryId }) {
     if (isGuestMode()) {
-      // Offline fallback: load local quiz immediately
-      throw new Error("Guest mode is offline-first fallback");
+      throw new Error("Guest mode uses predefined quizzes");
     }
+
     return request("/quizzes/generate", {
       method: "POST",
-      body: JSON.stringify({ category, difficulty, triviaCategoryId })
+      body: JSON.stringify({
+        subject,
+        difficulty,
+        questionCount,
+        triviaCategoryId,
+      }),
     });
   }
 };

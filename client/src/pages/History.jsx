@@ -18,23 +18,20 @@ export default function HistoryPage() {
   const [error, setError] = useState("")
 
   useEffect(() => {
-    const fetchHistory = async () => {
+    const loadHistory = async () => {
       setLoading(true)
+      setError("")
       try {
-        const res = await api.getMyAttempts(1, 100) // fetch up to 100 attempts
-        if (res.success) {
-          setAttempts(res.data || [])
-        } else {
-          setError("Failed to load history.")
-        }
+        const res = await api.getMyAttempts()
+        setAttempts(res.data || [])
       } catch (err) {
-        console.error("Error loading attempt history:", err)
-        setError("Error connecting to server. Please try again.")
+        console.error('Failed to load history:', err)
+        setError(err.message || 'Failed to load history.')
       } finally {
         setLoading(false)
       }
     }
-    fetchHistory()
+    loadHistory()
   }, [])
 
   const handleReview = async (attemptId, quizId, subjectName, difficultyLabel) => {
@@ -71,7 +68,6 @@ export default function HistoryPage() {
             a => a.question.toString() === q._id.toString()
           )
           if (!userAns || !userAns.selectedOption) return -1
-
           return q.options.findIndex(
             o => o._id.toString() === userAns.selectedOption.toString()
           )
@@ -105,6 +101,22 @@ export default function HistoryPage() {
     return "var(--red)"
   }
 
+  // ✅ Get row data – uses fields from API (subject, difficulty, quizTitle, etc.)
+  const getRowData = (a) => {
+    const title = a.quizTitle || (a.subject ? `${a.subject} Quiz` : "Untitled Quiz")
+    const cat = a.subject || "General"
+    const diff = a.difficulty || "medium"
+    const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
+    const pct = a.percentage !== undefined ? a.percentage : Math.round((a.score / a.totalPossible) * 100)
+    const quizId = a.quizId
+    const dateStr = new Date(a.createdAt).toLocaleDateString(undefined, {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit"
+    })
+    const isDisabled = reviewLoading !== null || isGuestMode() || !quizId || quizId.startsWith("offline-")
+    return { title, cat, diff, diffLabel, pct, quizId, dateStr, isDisabled }
+  }
+
   return (
     <div className="history-page">
       <Navbar />
@@ -130,6 +142,8 @@ export default function HistoryPage() {
           </div>
         ) : (
           <div className="history-card">
+
+            {/* DESKTOP TABLE */}
             <div className="history-table-container">
               <table className="history-table">
                 <thead>
@@ -144,17 +158,7 @@ export default function HistoryPage() {
                 </thead>
                 <tbody>
                   {attempts.map((a, i) => {
-                    const title = a.quiz ? a.quiz.title : (a.subject ? `${a.subject} Fallback` : "Custom Quiz")
-                    const cat = a.quiz ? a.quiz.category : (a.subject || "General")
-                    const diff = a.quiz ? a.quiz.difficulty : (a.difficulty || "medium")
-                    const diffLabel = diff.charAt(0).toUpperCase() + diff.slice(1)
-                    const pct = a.percentage !== undefined ? a.percentage : Math.round((a.score / a.totalPossible) * 100)
-                    const quizId = a.quiz ? a.quiz._id : a.quizId
-                    const dateStr = new Date(a.createdAt).toLocaleDateString(undefined, {
-                      year: 'numeric', month: 'short', day: 'numeric',
-                      hour: '2-digit', minute: '2-digit'
-                    })
-
+                    const { title, cat, diff, diffLabel, pct, quizId, dateStr, isDisabled } = getRowData(a)
                     return (
                       <tr key={a._id || i}>
                         <td>
@@ -163,7 +167,7 @@ export default function HistoryPage() {
                         <td>
                           <div className="history-table-meta">
                             <span className="history-cat-badge">{cat}</span>
-                            <span className={`history-diff-badge ${diff}`}>{diff}</span>
+                            <span className={`history-diff-badge ${diff}`}>{diffLabel}</span>
                           </div>
                         </td>
                         <td>{dateStr}</td>
@@ -177,7 +181,7 @@ export default function HistoryPage() {
                         <td>
                           <button
                             className="btn-history-review"
-                            disabled={reviewLoading !== null || isGuestMode() || !quizId || quizId.startsWith("offline-")}
+                            disabled={isDisabled}
                             onClick={() => handleReview(a._id, quizId, title, diffLabel)}
                           >
                             {reviewLoading === a._id ? "Loading..." : "Review"}
@@ -189,6 +193,51 @@ export default function HistoryPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* MOBILE CARD LIST */}
+            <div className="history-card-list">
+              {attempts.map((a, i) => {
+                const { title, cat, diff, diffLabel, pct, quizId, dateStr, isDisabled } = getRowData(a)
+                return (
+                  <div className="history-mobile-card" key={a._id || i}>
+                    <div className="history-mobile-card-header">
+                      <span className="history-mobile-title">{title}</span>
+                      <div className="history-mobile-score">
+                        <span className="history-score-pct" style={{ color: scoreColor(pct) }}>{pct}%</span>
+                        <span className="history-score-raw">{a.score} / {a.totalPossible}</span>
+                      </div>
+                    </div>
+
+                    <div className="history-mobile-card-meta">
+                      <span className="history-cat-badge">{cat}</span>
+                      <span className={`history-diff-badge ${diff}`}>{diffLabel}</span>
+                    </div>
+
+                    <div className="history-mobile-card-info">
+                      <div className="history-mobile-info-item">
+                        <span className="history-mobile-info-label">Date</span>
+                        <span className="history-mobile-info-value">{dateStr}</span>
+                      </div>
+                      <div className="history-mobile-info-item">
+                        <span className="history-mobile-info-label">Time Spent</span>
+                        <span className="history-mobile-info-value">{formatTime(a.timeTakenSeconds || 0)}</span>
+                      </div>
+                    </div>
+
+                    <div className="history-mobile-card-footer">
+                      <button
+                        className="btn-history-review-mobile"
+                        disabled={isDisabled}
+                        onClick={() => handleReview(a._id, quizId, title, diffLabel)}
+                      >
+                        {reviewLoading === a._id ? "Loading..." : "Review Quiz"}
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
           </div>
         )}
       </main>

@@ -37,16 +37,26 @@ const quizSchema = new mongoose.Schema(
       trim: true,
       maxlength: 120,
     },
-    description: {
+    subject: {
       type: String,
-      trim: true,
-      maxlength: 500,
-      default: '',
-    },
-    category: {
-      type: String,
-      trim: true,
-      default: 'General',
+      required: true,
+      enum: [
+        "JavaScript",
+        "React",
+        "HTML",
+        "CSS",
+        "MongoDB",
+        "Node.js",
+        "Express",
+        "Python",
+        "Java",
+        "C++",
+        "C#",
+        "SQL",
+        "Data Structures",
+        "Algorithms",
+        "Other"
+      ]
     },
     difficulty: {
       type: String,
@@ -73,6 +83,16 @@ const quizSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
+    generatedBy: {
+      type: String,
+      enum: ["groq", "opentdb"],
+      default: "groq"
+    },
+    questionCount: {
+      type: Number,
+      required: true,
+      enum: [20, 30, 50]
+    }
   },
   { timestamps: true }
 );
