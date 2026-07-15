@@ -60,7 +60,7 @@ The repository is structured as two distinct, isolated sub‑projects:
 ### 📱 Client (`client/`)
 Contains the React frontend, static assets, styling, and API service layer.
 
-```text
+
 client/
 ├── public/
 │   ├── favicon.ico
@@ -132,9 +132,7 @@ server/
 ├── .env.example # Environment template
 └── server.js # Root entry point
 
-text
 
----
 
 ## 🔌 API Endpoints
 
