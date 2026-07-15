@@ -2,11 +2,6 @@ const mongoose = require('mongoose');
 const Attempt = require('../models/Attempt');
 const asyncHandler = require('../utils/asyncHandler');
 
-/**
- * @route   GET /api/stats/me
- * @desc    Aggregate statistics for the logged-in user
- * @access  Private
- */
 const getMyStats = asyncHandler(async (req, res) => {
   const userId = req.user._id;
 
@@ -34,11 +29,11 @@ const getMyStats = asyncHandler(async (req, res) => {
     },
   ]);
 
+  // ✅ Get recent attempts – use the attempt's own subject/difficulty
   const recentAttempts = await Attempt.find({ user: userId })
-    .populate('quiz', 'title subject difficulty')
     .sort({ createdAt: -1 })
     .limit(100)
-    .select('score totalPossible percentage timeTakenSeconds createdAt quiz');
+    .select('score totalPossible percentage timeTakenSeconds createdAt subject difficulty');
 
   res.status(200).json({
     success: true,
@@ -57,19 +52,14 @@ const getMyStats = asyncHandler(async (req, res) => {
         percentage: a.percentage,
         timeTakenSeconds: a.timeTakenSeconds,
         createdAt: a.createdAt,
-        // ✅ Use subject from the populated quiz
-        subject: a.quiz ? a.quiz.subject : 'Other',
-        difficulty: a.quiz ? a.quiz.difficulty : 'medium',
+        // ✅ Use the attempt's own fields
+        subject: a.subject || 'Other',
+        difficulty: a.difficulty || 'medium',
       }))
     },
   });
 });
 
-/**
- * @route   GET /api/stats/quiz/:quizId
- * @desc    Aggregate stats for how the logged-in user has performed on one quiz
- * @access  Private
- */
 const getMyStatsForQuiz = asyncHandler(async (req, res) => {
   const { quizId } = req.params;
   const userId = req.user._id;

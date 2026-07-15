@@ -22,10 +22,18 @@ const subjects = [
   { name: "Other",           icon: "✦",  color: "var(--green)",  bg: "var(--green-bg)",  border: "var(--green-border)" },
 ]
 
-function slugify(name) {
-  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")
-}
+  function slugify(name) {
+    // For C++ and C#, keep the + and # symbols
+    if (name === "C++") return "c++";
+    if (name === "C#") return "c#";
+    if (name === "Express.js") return "expressjs";
+    if (name === "Node.js") return "nodejs";
+    if (name === "Data Structures") return "data-structures";
+    // For all others, lowercase and replace spaces with hyphens
+    return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  }
 
+  
 export default function QuizMenuPage() {
   const navigate = useNavigate()
 

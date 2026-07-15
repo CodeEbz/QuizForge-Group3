@@ -85,7 +85,7 @@ const quizSchema = new mongoose.Schema(
     },
     generatedBy: {
       type: String,
-      enum: ["groq", "opentdb"],
+      enum: ["groq", "opentdb", "openrouter", "openai"],
       default: "groq"
     },
     questionCount: {

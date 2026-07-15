@@ -43,6 +43,7 @@ export default function QuizPage() {
   const [showCancel, setShowCancel] = useState(false);
   const [taggedQuestions, setTaggedQuestions] = useState([]);
   const [submitting, setSubmitting] = useState(false);
+  const submittedRef = useRef(false);
 
   // Guard to prevent duplicate loads
   const loadedRef = useRef({ subject: null, difficulty: null });
@@ -117,27 +118,30 @@ export default function QuizPage() {
 
   // Handle quiz submission (Guest + Registered)
   const handleSubmit = useCallback(async () => {
+    // ✅ Prevent duplicate submissions
+    if (submittedRef.current || submitting) return;
+    submittedRef.current = true;
+    setSubmitting(true);
+
     setIsGrading(true);
     const timeTakenSeconds = config.time - timeLeft;
 
     // ✅ GUEST MODE: Grade locally, skip API
     if (isGuestMode()) {
-      const { guestQuizzes } = await import("../data/guestQuizzes.js");
-      const guestQuiz = guestQuizzes[subject.toLowerCase()];
       let localScore = 0;
       const gradedQuestions = questions.map((q, idx) => {
-      const userAns = answers[idx];
-      const correctIdx = q.options.findIndex(o => o.isCorrect);
-      const isCorrect = userAns && userAns.selectedOptionIndex === correctIdx;
-      if (isCorrect) localScore++;
-      
-      return {
-        question: q.questionText,
-        options: q.options.map(o => o.text),
-        correct: correctIdx,
-        explanation: q.explanation || "No explanation provided.",
-      };
-    });
+        const userAns = answers[idx];
+        const correctIdx = q.options.findIndex(o => o.isCorrect);
+        const isCorrect = userAns && userAns.selectedOptionIndex === correctIdx;
+        if (isCorrect) localScore++;
+        
+        return {
+          question: q.questionText,
+          options: q.options.map(o => o.text),
+          correct: correctIdx,
+          explanation: q.explanation || "No explanation provided.",
+        };
+      });
 
       navigate("/score", {
         state: {
@@ -153,6 +157,7 @@ export default function QuizPage() {
       });
       
       setIsGrading(false);
+      setSubmitting(false);
       return;
     }
 
@@ -195,6 +200,7 @@ export default function QuizPage() {
         });
       } else {
         setError(submitRes.error || "Submission failed. Please try again.");
+        submittedRef.current = false; // allow retry on error
       }
     } catch (err) {
       console.error("Submit failed:", err);
@@ -203,14 +209,18 @@ export default function QuizPage() {
       } else {
         setError("Failed to submit quiz. Please check your connection.");
       }
+      submittedRef.current = false; // allow retry on error
     } finally {
       setIsGrading(false);
+      setSubmitting(false);
     }
-  }, [answers, questions, quizId, timeLeft, config, subjectName, navigate, taggedQuestions]);
+  }, [answers, questions, quizId, timeLeft, config, subjectName, navigate, taggedQuestions, submitting]);
+
 
   // Timer auto-submit
   useEffect(() => {
     if (loading) return;
+    if (submittedRef.current) return; // ✅ already submitted
     if (timeLeft <= 0) {
       handleSubmit();
       return;
