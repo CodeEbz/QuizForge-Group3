@@ -23,7 +23,7 @@ app.use(express.json({ limit: '1mb' })); // parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
 
 // --- CORS: allow only the React app origins listed in .env ---
-const allowedOrigins = (process.env.CLIENT_ORIGINS || 'http://localhost:3000')
+const allowedOrigins = (process.env.CLIENT_ORIGINS || 'http://localhost:5000')
   .split(',')
   .map((origin) => origin.trim());
 

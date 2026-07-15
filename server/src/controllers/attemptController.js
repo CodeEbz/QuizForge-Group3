@@ -47,6 +47,11 @@ const submitAttempt = asyncHandler(async (req, res) => {
     });
   }
 
+    const existingAttempt = await Attempt.findOne({ user: req.user._id, quiz: quizId });
+    if (existingAttempt) {
+      throw new ApiError(409, 'You have already submitted this quiz. Duplicate attempts are not allowed.');
+    }
+
   const totalPossible = quiz.questions.reduce((sum, q) => sum + (q.points || 1), 0);
   const percentage = totalPossible > 0 ? (score / totalPossible) * 100 : 0;
 

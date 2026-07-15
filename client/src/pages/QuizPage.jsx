@@ -42,14 +42,15 @@ export default function QuizPage() {
   const [timeLeft, setTimeLeft] = useState(config.time);
   const [showCancel, setShowCancel] = useState(false);
   const [taggedQuestions, setTaggedQuestions] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
 
-  // ✅ Guard to prevent duplicate requests for the same subject/difficulty
+  // Guard to prevent duplicate loads
   const loadedRef = useRef({ subject: null, difficulty: null });
 
-  // 1. Load quiz on mount
+  // Load quiz on mount
   useEffect(() => {
     const loadQuiz = async () => {
-      // ✅ Prevent duplicate load for the same subject/difficulty
+      // Prevent duplicate load
       if (loadedRef.current.subject === subject && loadedRef.current.difficulty === difficulty) {
         return;
       }
@@ -78,7 +79,7 @@ export default function QuizPage() {
         return;
       }
 
-      // Online generation
+      // Online generation (registered users)
       try {
         const genRes = await api.generateQuiz({
           subject: subject.toLowerCase(),
@@ -114,11 +115,48 @@ export default function QuizPage() {
     loadQuiz();
   }, [subject, difficulty, config, navigate]);
 
-  // 2. Handle quiz submission
+  // Handle quiz submission (Guest + Registered)
   const handleSubmit = useCallback(async () => {
     setIsGrading(true);
     const timeTakenSeconds = config.time - timeLeft;
 
+    // ✅ GUEST MODE: Grade locally, skip API
+    if (isGuestMode()) {
+      const { guestQuizzes } = await import("../data/guestQuizzes.js");
+      const guestQuiz = guestQuizzes[subject.toLowerCase()];
+      let localScore = 0;
+      const gradedQuestions = questions.map((q, idx) => {
+      const userAns = answers[idx];
+      const correctIdx = q.options.findIndex(o => o.isCorrect);
+      const isCorrect = userAns && userAns.selectedOptionIndex === correctIdx;
+      if (isCorrect) localScore++;
+      
+      return {
+        question: q.questionText,
+        options: q.options.map(o => o.text),
+        correct: correctIdx,
+        explanation: q.explanation || "No explanation provided.",
+      };
+    });
+
+      navigate("/score", {
+        state: {
+          score: localScore,
+          total: questions.length,
+          subject: subjectName,
+          difficulty: config.label,
+          answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
+          questions: gradedQuestions,
+          isOffline: false,
+          tagged: taggedQuestions,
+        },
+      });
+      
+      setIsGrading(false);
+      return;
+    }
+
+    // ✅ REGISTERED USER: Submit to API
     try {
       const formattedAnswers = answers.map((ans, idx) => ({
         questionId: questions[idx]._id,
@@ -132,7 +170,6 @@ export default function QuizPage() {
       });
 
       if (submitRes.success) {
-        // Fetch review data (includes correct answers and explanations)
         const reviewRes = await api.getQuizForReview(quizId);
         const reviewQuestions = questions.map((q, idx) => {
           const correctIdx = reviewRes.data.questions[idx].options.findIndex(o => o.isCorrect);
@@ -146,8 +183,8 @@ export default function QuizPage() {
 
         navigate("/score", {
           state: {
-            score: submitRes.data?.score ?? 0,
-            total: submitRes.data?.totalQuestions ?? submitRes.data?.totalPossible ?? 0, // ✅ Fallback
+            score: submitRes.data.score ?? 0,
+            total: submitRes.data.totalQuestions ?? 0,
             subject: subjectName || "Unknown",
             difficulty: config.label || "Easy",
             answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
@@ -171,7 +208,7 @@ export default function QuizPage() {
     }
   }, [answers, questions, quizId, timeLeft, config, subjectName, navigate, taggedQuestions]);
 
-  // 3. Timer effect – auto-submit when time runs out
+  // Timer auto-submit
   useEffect(() => {
     if (loading) return;
     if (timeLeft <= 0) {
@@ -183,7 +220,6 @@ export default function QuizPage() {
   }, [timeLeft, handleSubmit, loading]);
 
   // ---- Render logic ----
-  // (the rest of the component stays the same)
   if (loading) {
     const subjectLower = (subject || "").toLowerCase();
     let icon = "✦";

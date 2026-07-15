@@ -4,37 +4,41 @@ const Quiz = require("../models/Quiz");
 const { generateGroqQuiz } = require("../services/groqService");
 const { generateTriviaQuiz } = require("../services/triviaService");
 
-// Subjects that use Groq API (AI-generated) - all in lowercase for comparison
-const AI_SUBJECTS = [
-  "javascript", "react", "html", "css", "mongodb", 
-  "node.js", "express", "python", "java", "c++", 
-  "c#", "sql", "data structures", "algorithms"
-];
-
-// Subjects that use Open Trivia DB
-const TRIVIA_SUBJECTS = ["other"];
-
-// Map for converting frontend subjects to schema format (exact match)
-const SUBJECT_MAP = {
+// Map URL slugs to proper enum values
+const subjectMap = {
   "javascript": "JavaScript",
   "react": "React",
   "html": "HTML",
   "css": "CSS",
   "mongodb": "MongoDB",
-  "node.js": "Node.js",
+  "node-js": "Node.js",
   "express": "Express",
   "python": "Python",
   "java": "Java",
   "c++": "C++",
   "c#": "C#",
   "sql": "SQL",
-  "data structures": "Data Structures",
+  "data-structures": "Data Structures",
   "algorithms": "Algorithms",
   "other": "Other"
 };
 
+const AI_SUBJECTS = [
+  "JavaScript", "React", "HTML", "CSS", "MongoDB",
+  "Node.js", "Express", "Python", "Java", "C++",
+  "C#", "SQL", "Data Structures", "Algorithms"
+];
+
+const TRIVIA_SUBJECTS = ["Other"];
+
 const generateDynamicQuiz = asyncHandler(async (req, res) => {
   const { subject, difficulty, questionCount } = req.body;
+
+  // Normalize subject to proper enum value
+  const normalizedSubject = subjectMap[subject.toLowerCase()];
+  if (!normalizedSubject) {
+    throw new ApiError(400, `Invalid subject: "${subject}"`);
+  }
 
   // Validate required fields
   if (!subject || !difficulty || !questionCount) {
@@ -64,51 +68,55 @@ const generateDynamicQuiz = asyncHandler(async (req, res) => {
       throw new ApiError(400, "Question count must be 20, 30 or 50.");
   }
 
-  // Normalize subject: convert frontend format (e.g., "javascript") to schema format ("JavaScript")
-  const subjectLower = subject.toLowerCase();
-  const normalizedSubject = SUBJECT_MAP[subjectLower] || subject; // Fallback to original if not found
-
-  console.log(`📚 Subject received: "${subject}", normalized to: "${normalizedSubject}"`);
-
   // Determine which service to use
   let questions;
   let generatedBy;
 
   try {
-    if (AI_SUBJECTS.includes(subjectLower)) {
-      // Use Groq for programming subjects
+    if (AI_SUBJECTS.includes(normalizedSubject)) {
       console.log(`📚 Generating ${difficulty} ${normalizedSubject} quiz with Groq...`);
       questions = await generateGroqQuiz(normalizedSubject, difficulty, questionCountNum);
       generatedBy = "groq";
-    } else if (TRIVIA_SUBJECTS.includes(subjectLower)) {
-      // Use Open Trivia DB for "Other"
+    } else if (TRIVIA_SUBJECTS.includes(normalizedSubject)) {
       console.log(`📚 Generating ${difficulty} general trivia quiz with Open Trivia DB...`);
       questions = await generateTriviaQuiz(difficulty, questionCountNum);
       generatedBy = "opentdb";
     } else {
-      // Fallback: try Groq anyway
-      console.warn(`⚠️ Unknown subject "${subject}", using Groq as fallback.`);
-      questions = await generateGroqQuiz(normalizedSubject, difficulty, questionCountNum);
-      generatedBy = "groq";
+      throw new ApiError(400, `No service available for subject: "${normalizedSubject}"`);
     }
   } catch (error) {
-    // Check if error is from the service (not our ApiError)
     if (error.statusCode) {
-      throw error; // Already an ApiError
+      throw error;
     }
-    
     console.error('Quiz generation failed:', error.message);
     throw new ApiError(500, `Failed to generate quiz: ${error.message}`);
   }
 
-  // Save quiz to MongoDB with normalized subject (exact match to schema)
+  // Validate questions
+  if (!questions || !Array.isArray(questions) || questions.length === 0) {
+    console.error('❌ Generated questions invalid:', questions);
+    throw new ApiError(500, 'No valid questions were generated. Please try again.');
+  }
+
+  // Ensure each question has required fields
+  const validQuestions = questions.map(q => ({
+    questionText: q.questionText || 'Question text missing',
+    options: (q.options || []).map(o => ({
+      text: o.text || 'Option missing',
+      isCorrect: !!o.isCorrect,
+    })),
+    explanation: q.explanation || 'No explanation provided.',
+    points: q.points || 1,
+  }));
+
+  // Save quiz to MongoDB
   const quiz = await Quiz.create({
     title: `${normalizedSubject} Quiz`,
-    subject: normalizedSubject, // ✅ Now matches schema enum exactly
+    subject: normalizedSubject,
     difficulty: difficulty.toLowerCase(),
     questionCount: questionCountNum,
-    generatedBy: generatedBy, // ✅ "groq" or "opentdb"
-    questions,
+    generatedBy: generatedBy,
+    questions: validQuestions,
     timeLimitSeconds,
     createdBy: req.user._id,
   });

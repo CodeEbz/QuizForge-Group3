@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Navbar from "../components/Navbar"
+import GuestLock from "../components/GuestLock"
 import { api, isGuestMode } from "../services/api"
 import "../styles/History.css"
 
@@ -16,6 +17,10 @@ export default function HistoryPage() {
   const [loading, setLoading] = useState(true)
   const [reviewLoading, setReviewLoading] = useState(null)
   const [error, setError] = useState("")
+
+  if (isGuestMode()) {
+    return <GuestLock feature="Quiz History" message="Sign up to track your quiz history and review past attempts!" />;
+  }
 
   useEffect(() => {
     const loadHistory = async () => {
@@ -96,9 +101,10 @@ export default function HistoryPage() {
   }
 
   function scoreColor(pct) {
-    if (pct >= 80) return "var(--green)"
-    if (pct >= 60) return "var(--orange)"
-    return "var(--red)"
+    if (pct >= 90) return "var(--green)";
+    if (pct >= 71) return "var(--blue)";
+    if (pct >= 50) return "var(--orange)";
+    return "var(--red)";
   }
 
   // ✅ Get row data – uses fields from API (subject, difficulty, quizTitle, etc.)
@@ -153,7 +159,6 @@ export default function HistoryPage() {
                     <th>Date Taken</th>
                     <th>Time Spent</th>
                     <th>Score</th>
-                    <th className="history-action-header">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -177,15 +182,6 @@ export default function HistoryPage() {
                             <span className="history-score-pct" style={{ color: scoreColor(pct) }}>{pct}%</span>
                             <span className="history-score-raw">{a.score} / {a.totalPossible}</span>
                           </div>
-                        </td>
-                        <td>
-                          <button
-                            className="btn-history-review"
-                            disabled={isDisabled}
-                            onClick={() => handleReview(a._id, quizId, title, diffLabel)}
-                          >
-                            {reviewLoading === a._id ? "Loading..." : "Review"}
-                          </button>
                         </td>
                       </tr>
                     )
@@ -225,13 +221,7 @@ export default function HistoryPage() {
                     </div>
 
                     <div className="history-mobile-card-footer">
-                      <button
-                        className="btn-history-review-mobile"
-                        disabled={isDisabled}
-                        onClick={() => handleReview(a._id, quizId, title, diffLabel)}
-                      >
-                        {reviewLoading === a._id ? "Loading..." : "Review Quiz"}
-                      </button>
+
                     </div>
                   </div>
                 )

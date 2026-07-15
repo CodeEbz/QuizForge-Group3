@@ -7,155 +7,190 @@ const groq = new Groq({
 
 const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// --- Validate and clean a question ---
-const validateQuestion = (q) => {
-  // Check if question has text
-  if (!q.questionText || q.questionText.trim() === '') {
-    return null;
-  }
+// --- Normalize for dedup (exact and near-exact) ---
+function normalizeText(text) {
+  return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
+}
 
-  // Check options
-  if (!q.options || !Array.isArray(q.options) || q.options.length < 2) {
-    return null;
-  }
+function isDuplicate(q1, q2) {
+  const t1 = normalizeText(q1.questionText);
+  const t2 = normalizeText(q2.questionText);
+  if (t1 === t2) return true;
+  const words1 = new Set(t1.split(' '));
+  const words2 = new Set(t2.split(' '));
+  const intersection = new Set([...words1].filter(w => words2.has(w)));
+  const overlap = intersection.size / Math.min(words1.size, words2.size);
+  return overlap >= 0.8;
+}
 
-  // Clean and validate each option
-  const validOptions = q.options
-    .map(opt => ({
-      text: opt.text || 'Option missing',
-      isCorrect: !!opt.isCorrect,
-    }))
-    // Ensure at least one option is marked correct
-    .map((opt, index, arr) => {
-      // If no option is correct, make the first one correct
-      if (!arr.some(o => o.isCorrect)) {
-        if (index === 0) return { ...opt, isCorrect: true };
-      }
-      return opt;
-    });
-
-  // Check if any option is correct after fixing
-  if (!validOptions.some(o => o.isCorrect)) {
-    validOptions[0].isCorrect = true;
-  }
-
-  return {
-    questionText: q.questionText.trim(),
-    options: validOptions,
-    explanation: q.explanation || 'No explanation provided.',
-  };
+// --- Syllabus (optional topic list) ---
+const SYLLABUS = {
+  javascript: [
+    "closures", "prototypes", "async/await", "promises", "event loop",
+    "ES6 features", "this binding", "DOM manipulation", "error handling",
+    "functional programming", "modules", "class inheritance", "generators"
+  ],
+  react: [
+    "component lifecycle", "useState", "useEffect", "useContext", "custom hooks",
+    "context API", "Redux", "props and state", "conditional rendering",
+    "lists and keys", "forms", "lifting state up", "composition vs inheritance"
+  ],
+  html: [
+    "semantic HTML", "forms", "tables", "lists", "links", "media",
+    "iframes", "meta tags", "accessibility", "HTML5 APIs", "data attributes",
+    "entities", "doctype", "validation", "canvas", "SVG"
+  ],
+  css: [
+    "selectors", "box model", "flexbox", "grid", "positioning", "z-index",
+    "colors", "typography", "transitions", "animations", "media queries",
+    "Sass/Less", "CSS variables", "transformations", "pseudo-elements",
+    "specificity", "box-sizing", "overflow"
+  ],
+  // Add more subjects as needed
 };
 
-const generateQuiz = async (subject, difficulty, count, retries = 3) => {
-  const prompt = `Generate ${count} multiple-choice questions about ${subject} programming at ${difficulty} difficulty level.
+function getSyllabus(subject) {
+  return SYLLABUS[subject.toLowerCase()] || null;
+}
 
-  IMPORTANT: Return ONLY valid JSON. No markdown, no explanation, no extra text.
-
-  The JSON must have this exact structure:
-  {
-    "questions": [
-      {
-        "questionText": "What is the output of console.log(typeof [])?",
-        "options": [
-          { "text": "array", "isCorrect": false },
-          { "text": "object", "isCorrect": true },
-          { "text": "undefined", "isCorrect": false },
-          { "text": "null", "isCorrect": false }
-        ],
-        "explanation": "In JavaScript, arrays are objects, so typeof [] returns 'object'."
-      }
-    ]
+function buildPrompt(subject, difficulty, count, usedTopics = []) {
+  const syllabus = getSyllabus(subject);
+  let topicInstruction = '';
+  if (syllabus) {
+    const available = syllabus.filter(t => !usedTopics.includes(t));
+    const selected = available.slice(0, count);
+    if (selected.length > 0) {
+      topicInstruction = `Cover the following subtopics: ${selected.join(', ')}. Use each topic exactly once.`;
+    }
+  }
+  if (!topicInstruction) {
+    topicInstruction = 'Ensure each question covers a distinct subtopic within the subject.';
   }
 
-  Make sure exactly ${count} questions are generated. Each question must have 4 options with exactly 1 correct answer.`;
+  return `Generate ${count} multiple-choice questions about ${subject} at ${difficulty} difficulty.
 
+${topicInstruction}
+
+**CRITICAL REQUIREMENTS:**
+1. Each question must test a specific, factual concept.
+2. The correct answer must be **precise and factually accurate**.
+3. Incorrect options (distractors) must be **plausible but clearly wrong** – they should represent common misconceptions or nearby concepts, not vague statements.
+4. All options must be **clear, complete sentences** (not just fragments).
+5. The explanation must **clearly justify** why the correct answer is right.
+
+Return ONLY valid JSON with structure:
+{
+  "questions": [
+    {
+      "questionText": "What is the primary role of the 'useState' hook in React?",
+      "options": [
+        {"text": "To manage state in functional components", "isCorrect": true},
+        {"text": "To handle side effects in class components", "isCorrect": false},
+        {"text": "To create global state across the app", "isCorrect": false},
+        {"text": "To fetch data from an API", "isCorrect": false}
+      ],
+      "explanation": "useState is a React Hook that lets you add state to functional components."
+    }
+  ]
+}`;
+}
+
+const generateGroqQuizChunk = async (subject, difficulty, count, usedTopics = [], retries = 3) => {
+  const prompt = buildPrompt(subject, difficulty, count, usedTopics);
   try {
     const completion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: prompt }],
       model: 'llama-3.1-8b-instant',
-      temperature: 0.5,
+      temperature: 0.6,
+      presence_penalty: 0.8,
+      frequency_penalty: 0.6,
       max_tokens: 2048,
     });
-
     const content = completion.choices[0].message.content;
     const parsed = parse(content);
+    if (!parsed.questions || !Array.isArray(parsed.questions)) throw new Error('Invalid response');
 
-    if (!parsed.questions || !Array.isArray(parsed.questions)) {
-      throw new Error('Invalid response structure');
-    }
+    const valid = parsed.questions.filter(q => {
+      if (!q.options || !Array.isArray(q.options) || q.options.length !== 4) return false;
+      const allHaveText = q.options.every(o => o.text && o.text.trim().length > 0);
+      const correctCount = q.options.filter(o => o.isCorrect === true).length;
+      if (correctCount === 0) {
+        q.options[0].isCorrect = true;
+        return true;
+      }
+      return allHaveText && correctCount === 1;
+    });
 
-    const validQuestions = parsed.questions
-      .map(validateQuestion)
-      .filter(q => q !== null);
+    valid.forEach(q => {
+      if (!q.explanation || q.explanation.trim() === '') {
+        const correctText = q.options.find(o => o.isCorrect)?.text || 'The correct answer.';
+        q.explanation = `The correct answer is: ${correctText}`;
+      }
+    });
 
-    // ✅ If we have enough, return them
-    if (validQuestions.length >= count) {
-      return validQuestions.slice(0, count);
-    }
-
-    // ✅ If we need more, generate them recursively
-    if (validQuestions.length > 0 && retries > 0) {
-      console.log(`📚 Need ${count - validQuestions.length} more questions, generating extras...`);
-      const extra = await generateQuiz(subject, difficulty, count - validQuestions.length, retries - 1);
-      validQuestions.push(...extra);
-    }
-
-    if (validQuestions.length === 0) {
-      throw new Error('No valid questions generated');
-    }
-
-    if (validQuestions.length < count) {
-      console.warn(`⚠️ Only ${validQuestions.length}/${count} valid questions generated`);
-    }
-
-    return validQuestions.slice(0, count);
+    return valid;
   } catch (error) {
     if (error.status === 429 && retries > 0) {
-      console.warn(`⚠️ Rate limit hit, waiting 5s... (${retries} retries left)`);
+      console.warn(`⏳ Rate limit, retrying... (${retries} left)`);
       await wait(5000);
-      return generateQuiz(subject, difficulty, count, retries - 1);
+      return generateGroqQuizChunk(subject, difficulty, count, usedTopics, retries - 1);
     }
     throw error;
   }
 };
 
-// --- Main function ---
-const generateGroqQuiz = async (subject, difficulty, count) => {
-  console.log(`📚 Generating ${difficulty} ${subject} quiz (${count} questions)...`);
+// ✅ Main exported function – renamed to match the controller's import
+const generateGroqQuiz = async (subject, difficulty, targetCount) => {
+  console.log(`📚 Generating ${difficulty} ${subject} quiz (target: ${targetCount})...`);
 
-  if (count <= 20) {
-    return await generateQuiz(subject, difficulty, count);
-  }
-
+  const oversample = Math.ceil(targetCount * 2.5);
   const CHUNK_SIZE = 8;
-  const totalChunks = Math.ceil(count / CHUNK_SIZE);
+  const totalChunks = Math.ceil(oversample / CHUNK_SIZE);
   const allQuestions = [];
+  const usedTopics = [];
+  const seen = new Set();
 
   for (let i = 0; i < totalChunks; i++) {
-    const chunkCount = Math.min(CHUNK_SIZE, count - (i * CHUNK_SIZE));
-    console.log(`📚 Chunk ${i+1}/${totalChunks} (${chunkCount} questions)...`);
-
+    const chunkCount = Math.min(CHUNK_SIZE, oversample - i * CHUNK_SIZE);
+    console.log(`📚 Chunk ${i+1}/${totalChunks} (${chunkCount})...`);
     try {
-      const chunk = await generateQuiz(subject, difficulty, chunkCount);
-      allQuestions.push(...chunk);
-      console.log(`✅ Chunk ${i+1} completed (${chunk.length} questions)`);
+      const chunk = await generateGroqQuizChunk(subject, difficulty, chunkCount, usedTopics);
+      const filtered = chunk.filter(q => {
+        const norm = normalizeText(q.questionText);
+        if (seen.has(norm)) return false;
+        for (const existing of allQuestions) {
+          if (isDuplicate(q, existing)) return false;
+        }
+        seen.add(norm);
+        return true;
+      });
+      filtered.forEach(q => {
+        const topic = q.questionText.split(' ').slice(0, 3).join(' ');
+        usedTopics.push(topic);
+      });
+      allQuestions.push(...filtered);
+      console.log(`✅ Chunk ${i+1} added ${filtered.length} new questions (total ${allQuestions.length})`);
     } catch (err) {
       console.error(`❌ Chunk ${i+1} failed:`, err.message);
-      if (allQuestions.length === 0) throw err;
     }
-
-    if (i < totalChunks - 1) {
-      console.log(`⏳ Waiting 2.5s...`);
-      await wait(2500);
-    }
+    if (i < totalChunks - 1) await wait(2500);
   }
 
-  if (allQuestions.length === 0) {
-    throw new Error('Failed to generate any questions.');
+  if (allQuestions.length >= targetCount) {
+    console.log(`✅ Generated ${allQuestions.length} unique questions, returning ${targetCount}`);
+    return allQuestions.slice(0, targetCount);
   }
 
-  console.log(`✅ Generated ${allQuestions.length} questions`);
-  return allQuestions.slice(0, count);
+  console.warn(`⚠️ Only ${allQuestions.length} unique questions. Padding with duplicates (no label).`);
+  const result = [...allQuestions];
+  let idx = 0;
+  while (result.length < targetCount) {
+    const q = allQuestions[idx % allQuestions.length];
+    result.push({ ...q });
+    idx++;
+  }
+  console.log(`📊 Final quiz size: ${result.length} questions (${allQuestions.length} unique, ${result.length - allQuestions.length} padded)`);
+  return result;
 };
 
 module.exports = { generateGroqQuiz };

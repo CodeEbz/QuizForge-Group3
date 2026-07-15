@@ -89,5 +89,7 @@ const attemptSchema = new mongoose.Schema(
 
 attemptSchema.index({ quiz: 1, score: -1 });
 attemptSchema.index({ user: 1, createdAt: -1 });
+// Add this line after the existing indexes
+attemptSchema.index({ user: 1, quiz: 1 }, { unique: true });
 
 module.exports = mongoose.model('Attempt', attemptSchema);

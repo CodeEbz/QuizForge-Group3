@@ -92,32 +92,35 @@ export const api = {
   },
 
   /**
-   * List quizzes matching filter criteria (category, difficulty)
+   * List quizzes matching filter criteria
    */
   async getQuizzes({ category, difficulty }) {
     if (isGuestMode()) {
       return { success: true, data: [] };
     }
-    
     let url = "/quizzes?";
     if (category) url += `category=${category}&`;
     if (difficulty) url += `difficulty=${difficulty}&`;
-    
     return request(url);
   },
 
   /**
-   * Get a quiz formatted for playing (question texts, no answer keys)
+   * Get a quiz formatted for playing (no answer keys)
    */
   async getQuizForPlay(id) {
+    if (isGuestMode()) {
+      throw new Error("Guest mode uses predefined quizzes from guestQuizzes.js");
+    }
     return request(`/quizzes/${id}/play`);
   },
 
   /**
    * Get a quiz for review (with correct answers)
-   * ✅ FIXED: No extra /api in the endpoint
    */
   getQuizForReview(quizId) {
+    if (isGuestMode()) {
+      throw new Error("Guest mode uses local quiz data for review");
+    }
     return request(`/quizzes/${quizId}/review`, {
       method: 'GET',
     });
@@ -137,14 +140,20 @@ export const api = {
   },
 
   /**
-   * Fetch current user's aggregated statistics and recent history
+   * Fetch current user's aggregated statistics
    */
   async getStats() {
     if (isGuestMode()) {
       return {
         success: true,
         data: {
-          summary: { totalAttempts: 0, totalScore: 0, averagePercentage: 0, bestPercentage: 0, averageTimeTakenSeconds: 0 },
+          summary: {
+            totalAttempts: 0,
+            totalScore: 0,
+            averagePercentage: 0,
+            bestPercentage: 0,
+            averageTimeTakenSeconds: 0
+          },
           recentAttempts: []
         }
       };
@@ -153,17 +162,15 @@ export const api = {
   },
 
   /**
-   * Fetch global leaderboard players list
+   * Fetch global leaderboard
    */
   async getLeaderboard(limit = 10) {
     if (isGuestMode()) {
       return {
         success: true,
         data: [
-          { rank: 1, name: "Sophia Wright", totalScore: 4850, totalAttempts: 42, averagePercentage: 97 },
-          { rank: 2, name: "Marcus Osei", totalScore: 4620, totalAttempts: 39, averagePercentage: 94 },
-          { rank: 3, name: "Priya Nair", totalScore: 4490, totalAttempts: 38, averagePercentage: 92 },
-          { rank: 4, name: "Guest Explorer (You)", totalScore: 0, totalAttempts: 0, averagePercentage: 0 }
+          { rank: 1, name: "Sign up to compete!", totalScore: 0 },
+          { rank: 2, name: "Join the leaderboard!", totalScore: 0 }
         ]
       };
     }
@@ -181,7 +188,7 @@ export const api = {
   },
 
   /**
-   * Get user's own quiz attempts history log
+   * Get user's own quiz attempts history
    */
   async getMyAttempts(page = 1, limit = 10) {
     if (isGuestMode()) {
@@ -197,18 +204,19 @@ export const api = {
     if (isGuestMode()) {
       return { success: true, data: null };
     }
+    if (!id) {
+      throw new Error("Attempt ID is required");
+    }
     return request(`/attempts/${id}`);
   },
 
   /**
    * Generate a dynamic quiz from Groq or Open Trivia APIs
-   * ✅ FIXED: Syntax error corrected
    */
   async generateQuiz({ subject, difficulty, questionCount, triviaCategoryId }) {
     if (isGuestMode()) {
       throw new Error("Guest mode uses predefined quizzes");
     }
-
     return request("/quizzes/generate", {
       method: "POST",
       body: JSON.stringify({

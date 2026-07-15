@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import Navbar from "../components/Navbar"
+import GuestLock from "../components/GuestLock"
+import { api, isGuestMode } from "../services/api"
 import "../styles/Profile.css"
 
 export default function ProfilePage() {
@@ -8,6 +10,17 @@ export default function ProfilePage() {
   const [user, setUser] = useState({ name: "Explorer" })
   const [editing, setEditing] = useState(false)
   const [nameInput, setNameInput] = useState("")
+
+  // ✅ Guest lock – placed at the top to prevent blink
+  if (isGuestMode()) {
+    return (
+      <GuestLock
+        feature="Profile"
+        message="Customize your profile by creating a free account!"
+        icon="🔒"
+      />
+    );
+  }
 
   useEffect(() => {
     const storedUser = localStorage.getItem("quizforge_user")

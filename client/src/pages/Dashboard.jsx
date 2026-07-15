@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate, useLocation } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import Navbar from "../components/Navbar"
 import { api, isGuestMode } from "../services/api"
 import "../styles/Dashboard.css"
@@ -7,7 +7,7 @@ import "../styles/Dashboard.css"
 export default function Dashboard() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [user, setUser] = useState({ name: "Alex" })
+  const [user, setUser] = useState({ name: "Explorer" })
   const [statsData, setStatsData] = useState({
     totalAttempts: 0,
     totalScore: 0,
@@ -19,33 +19,26 @@ export default function Dashboard() {
   const [topPlayers, setTopPlayers] = useState([])
   const [apiError, setApiError] = useState("")
 
-  // ✅ Helper: format percentage to whole number (or 2 decimals if needed)
   const formatPercentage = (value) => {
     if (value === undefined || value === null) return 0
-    return Math.round(value) // Clean whole number
-    // return Number(value).toFixed(2) // Use this if you want 2 decimals
+    return Math.round(value)
   }
 
-  // Re-fetch every time we navigate back to dashboard (e.g. after finishing a quiz)
   useEffect(() => {
-    // 1. Load user from local storage
     const storedUser = localStorage.getItem("quizforge_user")
     if (storedUser) {
       setUser(JSON.parse(storedUser))
     }
 
-    // 2. Fetch data function
     const fetchDashboardData = async () => {
       setApiError("")
       try {
-        // Fetch User profile (ensures fresh name)
         const meRes = await api.getMe()
         if (meRes.success) {
           setUser(meRes.data)
           localStorage.setItem("quizforge_user", JSON.stringify(meRes.data))
         }
 
-        // Fetch User Statistics
         const statsRes = await api.getStats()
         if (statsRes.success) {
           const s = statsRes.data.summary
@@ -59,7 +52,6 @@ export default function Dashboard() {
           setRecentActivity((statsRes.data.recentAttempts || []).slice(0, 5))
         }
 
-        // Fetch Leaderboard top 5 players
         const lbRes = await api.getLeaderboard(5)
         if (lbRes.success) {
           setTopPlayers(lbRes.data)
@@ -71,22 +63,22 @@ export default function Dashboard() {
     }
 
     fetchDashboardData()
-
-    return () => {}
   }, [location.pathname])
 
   function scoreColor(pct) {
-    if (pct >= 80) return "var(--green)"
-    if (pct >= 60) return "var(--orange)"
-    return "var(--red)"
+    if (pct >= 90) return "var(--green)";
+    if (pct >= 71) return "var(--blue)";
+    if (pct >= 50) return "var(--orange)";
+    return "var(--red)";
   }
 
-  // Map database statistics to dashboard stats cards layout
   const statsList = [
     { label: "Quizzes Taken", value: statsData.totalAttempts, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "✦" },
     { label: "Average Score", value: `${statsData.averagePercentage}%`, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "◈" },
     { label: "Best Score", value: `${statsData.bestPercentage}%`, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "⟐" },
   ]
+
+  const isGuest = isGuestMode()
 
   return (
     <div className="dashboard-page">
@@ -98,6 +90,33 @@ export default function Dashboard() {
           </div>
         )}
 
+        {/* Guest banner */}
+        {isGuest && (
+          <div className="guest-banner" style={{
+            background: 'var(--surface-2)',
+            border: '1px solid var(--orange-border)',
+            borderRadius: 'var(--radius-md)',
+            padding: '16px 20px',
+            marginBottom: '24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '12px'
+          }}>
+            <div>
+              <span style={{ fontSize: '1.2rem', marginRight: '8px' }}>🧑‍🤝‍🧑</span>
+              <span style={{ fontWeight: 600 }}>You are in Guest Mode</span>
+              <span style={{ color: 'var(--text-muted)', marginLeft: '8px' }}>
+                – take quizzes, but results won't be saved.
+              </span>
+            </div>
+            <Link to="/auth" className="btn-primary" style={{ padding: '6px 16px', fontSize: '0.9rem' }}>
+              Sign Up for Free
+            </Link>
+          </div>
+        )}
+
         {/* Welcome banner */}
         <div className="dashboard-banner">
           <div>
@@ -105,12 +124,12 @@ export default function Dashboard() {
             <h1 className="dashboard-banner-name">{user.name || "Explorer"} 👋</h1>
             <p className="dashboard-banner-hint">Ready to forge some knowledge today?</p>
           </div>
-          <button className="btn-start-quiz" onClick={() => navigate("/quiz-menu")}>
+          <Link to="/quiz-menu" className="btn-start-quiz">
             Start a Quiz →
-          </button>
+          </Link>
         </div>
 
-        {/* Stat cards */}
+        {/* Stat cards – show 0 for guests but still visually clean */}
         <div className="stats-grid">
           {statsList.map(s => (
             <div
@@ -125,21 +144,30 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Lower grid */}
         <div className="dashboard-lower">
 
-          {/* Recent activity */}
+          {/* Recent activity – show sign‑up prompt for guests */}
           <div className="dashboard-card">
             <div className="dashboard-card-header">
               <span className="dashboard-card-title">Recent Activity</span>
-              <button className="link-btn" onClick={() => navigate("/history")}>View History →</button>
+              {!isGuest && (
+                <Link to="/history" className="link-btn">View History →</Link>
+              )}
             </div>
             <div className="activity-list">
-              {recentActivity.length === 0 ? (
+              {isGuest ? (
+                <div className="guest-cta" style={{ padding: '20px', textAlign: 'center' }}>
+                  <p className="no-activity" style={{ marginBottom: '12px' }}>
+                    🧑‍🤝‍🧑 Sign up to save your quiz history and track progress!
+                  </p>
+                  <Link to="/auth" className="btn-primary">
+                    Create Free Account
+                  </Link>
+                </div>
+              ) : recentActivity.length === 0 ? (
                 <p className="no-activity">No quizzes taken yet. Click 'Start a Quiz' to begin!</p>
               ) : (
                 recentActivity.map((a, i) => {
-                  // ✅ Round percentage for display
                   const roundedPct = formatPercentage(a.percentage)
                   return (
                     <div key={i} className="activity-row">
@@ -148,8 +176,15 @@ export default function Dashboard() {
                         <div className="activity-meta">
                           {a.quiz
                             ? `${a.quiz.subject || a.quiz.category || "General"} · ${a.quiz.difficulty}`
-                            : `${a.subject || "General"} · ${a.difficulty || "easy"}`
-                          } · {new Date(a.createdAt).toLocaleDateString()}
+                            : `${a.subject || "Other"} · ${a.difficulty || "Easy"}`
+                          } · {new Date(a.createdAt).toLocaleDateString(undefined, {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
                         </div>
                       </div>
                       <div>
@@ -163,14 +198,25 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Mini leaderboard */}
+          {/* Mini leaderboard – show sign‑up prompt for guests */}
           <div className="dashboard-card">
             <div className="dashboard-card-header">
               <span className="dashboard-card-title">Top Players</span>
-              <button className="link-btn" onClick={() => navigate("/leaderboard")}>Full →</button>
+              {!isGuest && (
+                <Link to="/leaderboard" className="link-btn">Full Standings →</Link>
+              )}
             </div>
             <div className="mini-lb-list">
-              {topPlayers.length === 0 ? (
+              {isGuest ? (
+                <div className="guest-cta" style={{ padding: '20px', textAlign: 'center' }}>
+                  <p className="no-activity" style={{ marginBottom: '12px' }}>
+                    🏆 Create an account to compete on the global leaderboard!
+                  </p>
+                  <Link to="/auth" className="btn-primary">
+                    Join the Competition
+                  </Link>
+                </div>
+              ) : topPlayers.length === 0 ? (
                 <p className="no-activity">Standings are loading...</p>
               ) : (
                 topPlayers.slice(0, 5).map((p, idx) => {

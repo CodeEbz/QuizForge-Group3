@@ -4,133 +4,122 @@ export const guestQuizzes = {
       _id: "js-1",
       questionText: "Which keyword is used to declare a constant in JavaScript?",
       points: 1,
-      explanation:
-        "The const keyword creates a block-scoped variable whose value cannot be reassigned.",
+      explanation: "The const keyword creates a block-scoped variable whose value cannot be reassigned.",
       options: [
-        { _id: "js1-a", text: "var" },
-        { _id: "js1-b", text: "const" },
-        { _id: "js1-c", text: "let" },
-        { _id: "js1-d", text: "static" }
+        { _id: "js1-a", text: "var", isCorrect: false },
+        { _id: "js1-b", text: "const", isCorrect: true },
+        { _id: "js1-c", text: "let", isCorrect: false },
+        { _id: "js1-d", text: "static", isCorrect: false }
       ]
     },
     {
       _id: "js-2",
       questionText: "Which method converts a JSON string into a JavaScript object?",
       points: 1,
-      explanation:
-        "JSON.parse() converts a JSON string into a JavaScript object.",
+      explanation: "JSON.parse() converts a JSON string into a JavaScript object.",
       options: [
-        { _id: "js2-a", text: "JSON.parse()" },
-        { _id: "js2-b", text: "JSON.stringify()" },
-        { _id: "js2-c", text: "JSON.convert()" },
-        { _id: "js2-d", text: "JSON.object()" }
+        { _id: "js2-a", text: "JSON.parse()", isCorrect: true },
+        { _id: "js2-b", text: "JSON.stringify()", isCorrect: false },
+        { _id: "js2-c", text: "JSON.convert()", isCorrect: false },
+        { _id: "js2-d", text: "JSON.object()", isCorrect: false }
       ]
     },
     {
       _id: "js-3",
       questionText: "Which operator checks both value and data type?",
       points: 1,
-      explanation:
-        "The strict equality operator (===) compares both value and type.",
+      explanation: "The strict equality operator (===) compares both value and type.",
       options: [
-        { _id: "js3-a", text: "==" },
-        { _id: "js3-b", text: "=" },
-        { _id: "js3-c", text: "===" },
-        { _id: "js3-d", text: "!==" }
+        { _id: "js3-a", text: "==", isCorrect: false },
+        { _id: "js3-b", text: "=", isCorrect: false },
+        { _id: "js3-c", text: "===", isCorrect: true },
+        { _id: "js3-d", text: "!==", isCorrect: false }
       ]
     },
     {
       _id: "js-4",
       questionText: "Which array method creates a new array by applying a function to every element?",
       points: 1,
-      explanation:
-        "map() returns a new transformed array without modifying the original.",
+      explanation: "map() returns a new transformed array without modifying the original.",
       options: [
-        { _id: "js4-a", text: "forEach()" },
-        { _id: "js4-b", text: "filter()" },
-        { _id: "js4-c", text: "map()" },
-        { _id: "js4-d", text: "reduce()" }
+        { _id: "js4-a", text: "forEach()", isCorrect: false },
+        { _id: "js4-b", text: "filter()", isCorrect: false },
+        { _id: "js4-c", text: "map()", isCorrect: true },
+        { _id: "js4-d", text: "reduce()", isCorrect: false }
       ]
     },
     {
       _id: "js-5",
       questionText: "Which keyword is used to create a class in JavaScript?",
       points: 1,
-      explanation:
-        "The class keyword was introduced in ES6 to define classes.",
+      explanation: "The class keyword was introduced in ES6 to define classes.",
       options: [
-        { _id: "js5-a", text: "object" },
-        { _id: "js5-b", text: "prototype" },
-        { _id: "js5-c", text: "class" },
-        { _id: "js5-d", text: "constructor" }
+        { _id: "js5-a", text: "object", isCorrect: false },
+        { _id: "js5-b", text: "prototype", isCorrect: false },
+        { _id: "js5-c", text: "class", isCorrect: true },
+        { _id: "js5-d", text: "constructor", isCorrect: false }
       ]
     }
   ],
-
   react: [
     {
       _id: "react-1",
       questionText: "Which hook is used to manage component state?",
       points: 1,
-      explanation:
-        "useState allows functional components to store and update state.",
+      explanation: "useState allows functional components to store and update state.",
       options: [
-        { _id: "react1-a", text: "useRef" },
-        { _id: "react1-b", text: "useMemo" },
-        { _id: "react1-c", text: "useState" },
-        { _id: "react1-d", text: "useEffect" }
+        { _id: "react1-a", text: "useRef", isCorrect: false },
+        { _id: "react1-b", text: "useMemo", isCorrect: false },
+        { _id: "react1-c", text: "useState", isCorrect: true },
+        { _id: "react1-d", text: "useEffect", isCorrect: false }
       ]
     },
     {
       _id: "react-2",
       questionText: "JSX stands for:",
       points: 1,
-      explanation:
-        "JSX stands for JavaScript XML.",
+      explanation: "JSX stands for JavaScript XML.",
       options: [
-        { _id: "react2-a", text: "Java Syntax Extension" },
-        { _id: "react2-b", text: "JavaScript XML" },
-        { _id: "react2-c", text: "JSON XML" },
-        { _id: "react2-d", text: "JavaScript XHTML" }
+        { _id: "react2-a", text: "Java Syntax Extension", isCorrect: false },
+        { _id: "react2-b", text: "JavaScript XML", isCorrect: true },
+        { _id: "react2-c", text: "JSON XML", isCorrect: false },
+        { _id: "react2-d", text: "JavaScript XHTML", isCorrect: false }
       ]
     },
     {
       _id: "react-3",
       questionText: "Which hook runs side effects?",
       points: 1,
-      explanation:
-        "useEffect is designed for side effects such as API calls and subscriptions.",
+      explanation: "useEffect is designed for side effects such as API calls and subscriptions.",
       options: [
-        { _id: "react3-a", text: "useState" },
-        { _id: "react3-b", text: "useReducer" },
-        { _id: "react3-c", text: "useEffect" },
-        { _id: "react3-d", text: "useMemo" }
+        { _id: "react3-a", text: "useState", isCorrect: false },
+        { _id: "react3-b", text: "useReducer", isCorrect: false },
+        { _id: "react3-c", text: "useEffect", isCorrect: true },
+        { _id: "react3-d", text: "useMemo", isCorrect: false }
       ]
     },
     {
       _id: "react-4",
       questionText: "Props in React are:",
       points: 1,
-      explanation:
-        "Props are read-only values passed from a parent component.",
+      explanation: "Props are read-only values passed from a parent component.",
       options: [
-        { _id: "react4-a", text: "Mutable state" },
-        { _id: "react4-b", text: "Read-only data passed to components" },
-        { _id: "react4-c", text: "Database records" },
-        { _id: "react4-d", text: "CSS classes" }
+        { _id: "react4-a", text: "Mutable state", isCorrect: false },
+        { _id: "react4-b", text: "Read-only data passed to components", isCorrect: true },
+        { _id: "react4-c", text: "Database records", isCorrect: false },
+        { _id: "react4-d", text: "CSS classes", isCorrect: false }
       ]
     },
     {
       _id: "react-5",
       questionText: "Which command creates a React app using Vite?",
       points: 1,
-      explanation:
-        "npm create vite@latest is the recommended Vite starter command.",
+      explanation: "npm create vite@latest is the recommended Vite starter command.",
       options: [
-        { _id: "react5-a", text: "npm install react" },
-        { _id: "react5-b", text: "npm create vite@latest" },
-        { _id: "react5-c", text: "npm react new" },
-        { _id: "react5-d", text: "create-react vite" }
+        { _id: "react5-a", text: "npm install react", isCorrect: false },
+        { _id: "react5-b", text: "npm create vite@latest", isCorrect: true },
+        { _id: "react5-c", text: "npm react new", isCorrect: false },
+        { _id: "react5-d", text: "create-react vite", isCorrect: false }
       ]
     }
   ],
@@ -141,10 +130,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The <a> (anchor) tag creates hyperlinks between pages or resources.",
       options: [
-        { _id: "html1-a", text: "<link>" },
-        { _id: "html1-b", text: "<a>" },
-        { _id: "html1-c", text: "<href>" },
-        { _id: "html1-d", text: "<url>" }
+        { _id: "html1-a", text: "<link>", isCorrect: false },
+        { _id: "html1-b", text: "<a>", isCorrect: true },
+        { _id: "html1-c", text: "<href>", isCorrect: false },
+        { _id: "html1-d", text: "<url>", isCorrect: false }
       ]
     },
     {
@@ -153,10 +142,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "<h1> represents the highest-level heading.",
       options: [
-        { _id: "html2-a", text: "<heading>" },
-        { _id: "html2-b", text: "<head>" },
-        { _id: "html2-c", text: "<h6>" },
-        { _id: "html2-d", text: "<h1>" }
+        { _id: "html2-a", text: "<heading>", isCorrect: false },
+        { _id: "html2-b", text: "<head>", isCorrect: false },
+        { _id: "html2-c", text: "<h6>", isCorrect: false },
+        { _id: "html2-d", text: "<h1>", isCorrect: true }
       ]
     },
     {
@@ -165,10 +154,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The <img> tag embeds an image into a webpage.",
       options: [
-        { _id: "html3-a", text: "<picture>" },
-        { _id: "html3-b", text: "<image>" },
-        { _id: "html3-c", text: "<img>" },
-        { _id: "html3-d", text: "<src>" }
+        { _id: "html3-a", text: "<picture>", isCorrect: false },
+        { _id: "html3-b", text: "<image>", isCorrect: false },
+        { _id: "html3-c", text: "<img>", isCorrect: true },
+        { _id: "html3-d", text: "<src>", isCorrect: false }
       ]
     },
     {
@@ -177,10 +166,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The alt attribute provides alternative text for accessibility and when an image cannot load.",
       options: [
-        { _id: "html4-a", text: "title" },
-        { _id: "html4-b", text: "alt" },
-        { _id: "html4-c", text: "src" },
-        { _id: "html4-d", text: "name" }
+        { _id: "html4-a", text: "title", isCorrect: false },
+        { _id: "html4-b", text: "alt", isCorrect: true },
+        { _id: "html4-c", text: "src", isCorrect: false },
+        { _id: "html4-d", text: "name", isCorrect: false }
       ]
     },
     {
@@ -189,14 +178,13 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The <ul> element creates a bulleted list.",
       options: [
-        { _id: "html5-a", text: "<ol>" },
-        { _id: "html5-b", text: "<list>" },
-        { _id: "html5-c", text: "<ul>" },
-        { _id: "html5-d", text: "<li>" }
+        { _id: "html5-a", text: "<ol>", isCorrect: false },
+        { _id: "html5-b", text: "<list>", isCorrect: false },
+        { _id: "html5-c", text: "<ul>", isCorrect: true },
+        { _id: "html5-d", text: "<li>", isCorrect: false }
       ]
     }
   ],
-
   css: [
     {
       _id: "css-1",
@@ -204,10 +192,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The color property controls the color of text.",
       options: [
-        { _id: "css1-a", text: "font-color" },
-        { _id: "css1-b", text: "text-color" },
-        { _id: "css1-c", text: "color" },
-        { _id: "css1-d", text: "foreground" }
+        { _id: "css1-a", text: "font-color", isCorrect: false },
+        { _id: "css1-b", text: "text-color", isCorrect: false },
+        { _id: "css1-c", text: "color", isCorrect: true },
+        { _id: "css1-d", text: "foreground", isCorrect: false }
       ]
     },
     {
@@ -216,10 +204,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "background-color sets the background color of an element.",
       options: [
-        { _id: "css2-a", text: "bgcolor" },
-        { _id: "css2-b", text: "background-color" },
-        { _id: "css2-c", text: "background" },
-        { _id: "css2-d", text: "color" }
+        { _id: "css2-a", text: "bgcolor", isCorrect: false },
+        { _id: "css2-b", text: "background-color", isCorrect: true },
+        { _id: "css2-c", text: "background", isCorrect: false },
+        { _id: "css2-d", text: "color", isCorrect: false }
       ]
     },
     {
@@ -228,10 +216,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Flexbox is intended for arranging items in a row or column.",
       options: [
-        { _id: "css3-a", text: "Grid" },
-        { _id: "css3-b", text: "Flexbox" },
-        { _id: "css3-c", text: "Float" },
-        { _id: "css3-d", text: "Table" }
+        { _id: "css3-a", text: "Grid", isCorrect: false },
+        { _id: "css3-b", text: "Flexbox", isCorrect: true },
+        { _id: "css3-c", text: "Float", isCorrect: false },
+        { _id: "css3-d", text: "Table", isCorrect: false }
       ]
     },
     {
@@ -240,10 +228,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Margin controls the outer spacing around an element.",
       options: [
-        { _id: "css4-a", text: "padding" },
-        { _id: "css4-b", text: "spacing" },
-        { _id: "css4-c", text: "margin" },
-        { _id: "css4-d", text: "border-spacing" }
+        { _id: "css4-a", text: "padding", isCorrect: false },
+        { _id: "css4-b", text: "spacing", isCorrect: false },
+        { _id: "css4-c", text: "margin", isCorrect: true },
+        { _id: "css4-d", text: "border-spacing", isCorrect: false }
       ]
     },
     {
@@ -252,14 +240,13 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The # symbol selects an element by its id.",
       options: [
-        { _id: "css5-a", text: ".header" },
-        { _id: "css5-b", text: "*header" },
-        { _id: "css5-c", text: "#header" },
-        { _id: "css5-d", text: "header#" }
+        { _id: "css5-a", text: ".header", isCorrect: false },
+        { _id: "css5-b", text: "*header", isCorrect: false },
+        { _id: "css5-c", text: "#header", isCorrect: true },
+        { _id: "css5-d", text: "header#", isCorrect: false }
       ]
     }
   ],
-
   mongodb: [
     {
       _id: "mongo-1",
@@ -267,10 +254,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "MongoDB stores data in BSON documents inside collections.",
       options: [
-        { _id: "mongo1-a", text: "Rows" },
-        { _id: "mongo1-b", text: "Documents" },
-        { _id: "mongo1-c", text: "Tables" },
-        { _id: "mongo1-d", text: "Graphs" }
+        { _id: "mongo1-a", text: "Rows", isCorrect: false },
+        { _id: "mongo1-b", text: "Documents", isCorrect: true },
+        { _id: "mongo1-c", text: "Tables", isCorrect: false },
+        { _id: "mongo1-d", text: "Graphs", isCorrect: false }
       ]
     },
     {
@@ -279,10 +266,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "insertOne() inserts a single document into a MongoDB collection.",
       options: [
-        { _id: "mongo2-a", text: "addOne()" },
-        { _id: "mongo2-b", text: "insert()" },
-        { _id: "mongo2-c", text: "insertOne()" },
-        { _id: "mongo2-d", text: "saveOne()" }
+        { _id: "mongo2-a", text: "addOne()", isCorrect: false },
+        { _id: "mongo2-b", text: "insert()", isCorrect: false },
+        { _id: "mongo2-c", text: "insertOne()", isCorrect: true },
+        { _id: "mongo2-d", text: "saveOne()", isCorrect: false }
       ]
     },
     {
@@ -291,10 +278,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Collections group related documents, similar to tables in relational databases.",
       options: [
-        { _id: "mongo3-a", text: "Schema" },
-        { _id: "mongo3-b", text: "Collection" },
-        { _id: "mongo3-c", text: "Database" },
-        { _id: "mongo3-d", text: "Index" }
+        { _id: "mongo3-a", text: "Schema", isCorrect: false },
+        { _id: "mongo3-b", text: "Collection", isCorrect: true },
+        { _id: "mongo3-c", text: "Database", isCorrect: false },
+        { _id: "mongo3-d", text: "Index", isCorrect: false }
       ]
     },
     {
@@ -303,10 +290,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "find() returns documents that match a query.",
       options: [
-        { _id: "mongo4-a", text: "search()" },
-        { _id: "mongo4-b", text: "get()" },
-        { _id: "mongo4-c", text: "find()" },
-        { _id: "mongo4-d", text: "fetch()" }
+        { _id: "mongo4-a", text: "search()", isCorrect: false },
+        { _id: "mongo4-b", text: "get()", isCorrect: false },
+        { _id: "mongo4-c", text: "find()", isCorrect: true },
+        { _id: "mongo4-d", text: "fetch()", isCorrect: false }
       ]
     },
     {
@@ -315,14 +302,13 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Every MongoDB document has a unique _id field.",
       options: [
-        { _id: "mongo5-a", text: "id" },
-        { _id: "mongo5-b", text: "_key" },
-        { _id: "mongo5-c", text: "_id" },
-        { _id: "mongo5-d", text: "uuid" }
+        { _id: "mongo5-a", text: "id", isCorrect: false },
+        { _id: "mongo5-b", text: "_key", isCorrect: false },
+        { _id: "mongo5-c", text: "_id", isCorrect: true },
+        { _id: "mongo5-d", text: "uuid", isCorrect: false }
       ]
     }
   ],
-
   nodejs: [
     {
       _id: "node-1",
@@ -330,10 +316,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Node.js runs on Google's V8 JavaScript engine.",
       options: [
-        { _id: "node1-a", text: "SpiderMonkey" },
-        { _id: "node1-b", text: "V8" },
-        { _id: "node1-c", text: "JavaScriptCore" },
-        { _id: "node1-d", text: "Chakra" }
+        { _id: "node1-a", text: "SpiderMonkey", isCorrect: false },
+        { _id: "node1-b", text: "V8", isCorrect: true },
+        { _id: "node1-c", text: "JavaScriptCore", isCorrect: false },
+        { _id: "node1-d", text: "Chakra", isCorrect: false }
       ]
     },
     {
@@ -342,10 +328,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "package.json stores project metadata and dependencies.",
       options: [
-        { _id: "node2-a", text: "node.json" },
-        { _id: "node2-b", text: "package.json" },
-        { _id: "node2-c", text: "modules.json" },
-        { _id: "node2-d", text: "dependencies.json" }
+        { _id: "node2-a", text: "node.json", isCorrect: false },
+        { _id: "node2-b", text: "package.json", isCorrect: true },
+        { _id: "node2-c", text: "modules.json", isCorrect: false },
+        { _id: "node2-d", text: "dependencies.json", isCorrect: false }
       ]
     },
     {
@@ -354,10 +340,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "npm is installed automatically with Node.js.",
       options: [
-        { _id: "node3-a", text: "Composer" },
-        { _id: "node3-b", text: "Yarn" },
-        { _id: "node3-c", text: "npm" },
-        { _id: "node3-d", text: "NuGet" }
+        { _id: "node3-a", text: "Composer", isCorrect: false },
+        { _id: "node3-b", text: "Yarn", isCorrect: false },
+        { _id: "node3-c", text: "npm", isCorrect: true },
+        { _id: "node3-d", text: "NuGet", isCorrect: false }
       ]
     },
     {
@@ -366,10 +352,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The built-in http module provides server functionality.",
       options: [
-        { _id: "node4-a", text: "server" },
-        { _id: "node4-b", text: "http" },
-        { _id: "node4-c", text: "network" },
-        { _id: "node4-d", text: "express" }
+        { _id: "node4-a", text: "server", isCorrect: false },
+        { _id: "node4-b", text: "http", isCorrect: true },
+        { _id: "node4-c", text: "network", isCorrect: false },
+        { _id: "node4-d", text: "express", isCorrect: false }
       ]
     },
     {
@@ -378,24 +364,24 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Applications in Node.js are written in JavaScript.",
       options: [
-        { _id: "node5-a", text: "TypeScript only" },
-        { _id: "node5-b", text: "JavaScript" },
-        { _id: "node5-c", text: "Java" },
-        { _id: "node5-d", text: "Python" }
+        { _id: "node5-a", text: "TypeScript only", isCorrect: false },
+        { _id: "node5-b", text: "JavaScript", isCorrect: true },
+        { _id: "node5-c", text: "Java", isCorrect: false },
+        { _id: "node5-d", text: "Python", isCorrect: false }
       ]
     }
   ],
-    express: [
+  express: [
     {
       _id: "express-1",
       questionText: "What is Express primarily used for?",
       points: 1,
       explanation: "Express is a minimal web framework for building web servers and APIs with Node.js.",
       options: [
-        { _id: "express1-a", text: "Building mobile apps" },
-        { _id: "express1-b", text: "Creating Node.js web servers and APIs" },
-        { _id: "express1-c", text: "Managing databases" },
-        { _id: "express1-d", text: "Compiling JavaScript" }
+        { _id: "express1-a", text: "Building mobile apps", isCorrect: false },
+        { _id: "express1-b", text: "Creating Node.js web servers and APIs", isCorrect: true },
+        { _id: "express1-c", text: "Managing databases", isCorrect: false },
+        { _id: "express1-d", text: "Compiling JavaScript", isCorrect: false }
       ]
     },
     {
@@ -404,10 +390,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "app.get() registers a route that responds to HTTP GET requests.",
       options: [
-        { _id: "express2-a", text: "app.route()" },
-        { _id: "express2-b", text: "app.get()" },
-        { _id: "express2-c", text: "app.use()" },
-        { _id: "express2-d", text: "app.fetch()" }
+        { _id: "express2-a", text: "app.route()", isCorrect: false },
+        { _id: "express2-b", text: "app.get()", isCorrect: true },
+        { _id: "express2-c", text: "app.use()", isCorrect: false },
+        { _id: "express2-d", text: "app.fetch()", isCorrect: false }
       ]
     },
     {
@@ -416,10 +402,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "express.json() parses JSON request bodies into req.body.",
       options: [
-        { _id: "express3-a", text: "express.static()" },
-        { _id: "express3-b", text: "express.json()" },
-        { _id: "express3-c", text: "express.body()" },
-        { _id: "express3-d", text: "bodyParser.url()" }
+        { _id: "express3-a", text: "express.static()", isCorrect: false },
+        { _id: "express3-b", text: "express.json()", isCorrect: true },
+        { _id: "express3-c", text: "express.body()", isCorrect: false },
+        { _id: "express3-d", text: "bodyParser.url()", isCorrect: false }
       ]
     },
     {
@@ -428,10 +414,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "req.params contains values extracted from route parameters.",
       options: [
-        { _id: "express4-a", text: "req.body" },
-        { _id: "express4-b", text: "req.params" },
-        { _id: "express4-c", text: "req.query" },
-        { _id: "express4-d", text: "req.headers" }
+        { _id: "express4-a", text: "req.body", isCorrect: false },
+        { _id: "express4-b", text: "req.params", isCorrect: true },
+        { _id: "express4-c", text: "req.query", isCorrect: false },
+        { _id: "express4-d", text: "req.headers", isCorrect: false }
       ]
     },
     {
@@ -440,14 +426,13 @@ export const guestQuizzes = {
       points: 1,
       explanation: "app.listen() starts the server and listens for incoming requests.",
       options: [
-        { _id: "express5-a", text: "app.run()" },
-        { _id: "express5-b", text: "app.start()" },
-        { _id: "express5-c", text: "app.listen()" },
-        { _id: "express5-d", text: "app.server()" }
+        { _id: "express5-a", text: "app.run()", isCorrect: false },
+        { _id: "express5-b", text: "app.start()", isCorrect: false },
+        { _id: "express5-c", text: "app.listen()", isCorrect: true },
+        { _id: "express5-d", text: "app.server()", isCorrect: false }
       ]
     }
   ],
-
   python: [
     {
       _id: "python-1",
@@ -455,10 +440,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Functions are declared using the def keyword.",
       options: [
-        { _id: "python1-a", text: "func" },
-        { _id: "python1-b", text: "function" },
-        { _id: "python1-c", text: "def" },
-        { _id: "python1-d", text: "define" }
+        { _id: "python1-a", text: "func", isCorrect: false },
+        { _id: "python1-b", text: "function", isCorrect: false },
+        { _id: "python1-c", text: "def", isCorrect: true },
+        { _id: "python1-d", text: "define", isCorrect: false }
       ]
     },
     {
@@ -467,10 +452,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "A dictionary stores data as key-value pairs.",
       options: [
-        { _id: "python2-a", text: "List" },
-        { _id: "python2-b", text: "Tuple" },
-        { _id: "python2-c", text: "Dictionary" },
-        { _id: "python2-d", text: "Set" }
+        { _id: "python2-a", text: "List", isCorrect: false },
+        { _id: "python2-b", text: "Tuple", isCorrect: false },
+        { _id: "python2-c", text: "Dictionary", isCorrect: true },
+        { _id: "python2-d", text: "Set", isCorrect: false }
       ]
     },
     {
@@ -479,10 +464,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Python uses the class keyword for defining classes.",
       options: [
-        { _id: "python3-a", text: "object" },
-        { _id: "python3-b", text: "class" },
-        { _id: "python3-c", text: "struct" },
-        { _id: "python3-d", text: "new" }
+        { _id: "python3-a", text: "object", isCorrect: false },
+        { _id: "python3-b", text: "class", isCorrect: true },
+        { _id: "python3-c", text: "struct", isCorrect: false },
+        { _id: "python3-d", text: "new", isCorrect: false }
       ]
     },
     {
@@ -491,10 +476,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Python source files use the .py extension.",
       options: [
-        { _id: "python4-a", text: ".pt" },
-        { _id: "python4-b", text: ".python" },
-        { _id: "python4-c", text: ".py" },
-        { _id: "python4-d", text: ".pyt" }
+        { _id: "python4-a", text: ".pt", isCorrect: false },
+        { _id: "python4-b", text: ".python", isCorrect: false },
+        { _id: "python4-c", text: ".py", isCorrect: true },
+        { _id: "python4-d", text: ".pyt", isCorrect: false }
       ]
     },
     {
@@ -503,14 +488,13 @@ export const guestQuizzes = {
       points: 1,
       explanation: "print() displays output in the terminal or console.",
       options: [
-        { _id: "python5-a", text: "echo()" },
-        { _id: "python5-b", text: "printf()" },
-        { _id: "python5-c", text: "print()" },
-        { _id: "python5-d", text: "console.log()" }
+        { _id: "python5-a", text: "echo()", isCorrect: false },
+        { _id: "python5-b", text: "printf()", isCorrect: false },
+        { _id: "python5-c", text: "print()", isCorrect: true },
+        { _id: "python5-d", text: "console.log()", isCorrect: false }
       ]
     }
   ],
-
   java: [
     {
       _id: "java-1",
@@ -518,10 +502,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Objects are instantiated using the new keyword.",
       options: [
-        { _id: "java1-a", text: "class" },
-        { _id: "java1-b", text: "new" },
-        { _id: "java1-c", text: "create" },
-        { _id: "java1-d", text: "object" }
+        { _id: "java1-a", text: "class", isCorrect: false },
+        { _id: "java1-b", text: "new", isCorrect: true },
+        { _id: "java1-c", text: "create", isCorrect: false },
+        { _id: "java1-d", text: "object", isCorrect: false }
       ]
     },
     {
@@ -530,10 +514,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Execution begins in the main() method.",
       options: [
-        { _id: "java2-a", text: "start()" },
-        { _id: "java2-b", text: "run()" },
-        { _id: "java2-c", text: "main()" },
-        { _id: "java2-d", text: "execute()" }
+        { _id: "java2-a", text: "start()", isCorrect: false },
+        { _id: "java2-b", text: "run()", isCorrect: false },
+        { _id: "java2-c", text: "main()", isCorrect: true },
+        { _id: "java2-d", text: "execute()", isCorrect: false }
       ]
     },
     {
@@ -542,10 +526,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Java is an object-oriented programming language.",
       options: [
-        { _id: "java3-a", text: "Markup language" },
-        { _id: "java3-b", text: "Object-oriented programming language" },
-        { _id: "java3-c", text: "Database" },
-        { _id: "java3-d", text: "Web server" }
+        { _id: "java3-a", text: "Markup language", isCorrect: false },
+        { _id: "java3-b", text: "Object-oriented programming language", isCorrect: true },
+        { _id: "java3-c", text: "Database", isCorrect: false },
+        { _id: "java3-d", text: "Web server", isCorrect: false }
       ]
     },
     {
@@ -554,10 +538,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The final keyword prevents subclasses from overriding a method.",
       options: [
-        { _id: "java4-a", text: "static" },
-        { _id: "java4-b", text: "private" },
-        { _id: "java4-c", text: "final" },
-        { _id: "java4-d", text: "const" }
+        { _id: "java4-a", text: "static", isCorrect: false },
+        { _id: "java4-b", text: "private", isCorrect: false },
+        { _id: "java4-c", text: "final", isCorrect: true },
+        { _id: "java4-d", text: "const", isCorrect: false }
       ]
     },
     {
@@ -566,10 +550,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Java was originally developed by Sun Microsystems before Oracle acquired it.",
       options: [
-        { _id: "java5-a", text: "Microsoft" },
-        { _id: "java5-b", text: "Sun Microsystems" },
-        { _id: "java5-c", text: "IBM" },
-        { _id: "java5-d", text: "Google" }
+        { _id: "java5-a", text: "Microsoft", isCorrect: false },
+        { _id: "java5-b", text: "Sun Microsystems", isCorrect: true },
+        { _id: "java5-c", text: "IBM", isCorrect: false },
+        { _id: "java5-d", text: "Google", isCorrect: false }
       ]
     }
   ],
@@ -580,10 +564,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "C++ was developed as an extension of the C programming language.",
       options: [
-        { _id: "c++1-a", text: "Java" },
-        { _id: "c++1-b", text: "C" },
-        { _id: "c++1-c", text: "Python" },
-        { _id: "c++1-d", text: "Pascal" }
+        { _id: "c++1-a", text: "Java", isCorrect: false },
+        { _id: "c++1-b", text: "C", isCorrect: true },
+        { _id: "c++1-c", text: "Python", isCorrect: false },
+        { _id: "c++1-d", text: "Pascal", isCorrect: false }
       ]
     },
     {
@@ -592,10 +576,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The arrow operator (->) accesses members of an object through a pointer.",
       options: [
-        { _id: "c++2-a", text: "." },
-        { _id: "c++2-b", text: "::" },
-        { _id: "c++2-c", text: "->" },
-        { _id: "c++2-d", text: "&" }
+        { _id: "c++2-a", text: ".", isCorrect: false },
+        { _id: "c++2-b", text: "::", isCorrect: false },
+        { _id: "c++2-c", text: "->", isCorrect: true },
+        { _id: "c++2-d", text: "&", isCorrect: false }
       ]
     },
     {
@@ -604,10 +588,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The new keyword allocates memory dynamically.",
       options: [
-        { _id: "c++3-a", text: "malloc" },
-        { _id: "c++3-b", text: "create" },
-        { _id: "c++3-c", text: "new" },
-        { _id: "c++3-d", text: "alloc" }
+        { _id: "c++3-a", text: "malloc", isCorrect: false },
+        { _id: "c++3-b", text: "create", isCorrect: false },
+        { _id: "c++3-c", text: "new", isCorrect: true },
+        { _id: "c++3-d", text: "alloc", isCorrect: false }
       ]
     },
     {
@@ -616,10 +600,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "std::cout is used with the insertion operator (<<) to print output.",
       options: [
-        { _id: "c++4-a", text: "print()" },
-        { _id: "c++4-b", text: "std::cout" },
-        { _id: "c++4-c", text: "echo()" },
-        { _id: "c++4-d", text: "console.log()" }
+        { _id: "c++4-a", text: "print()", isCorrect: false },
+        { _id: "c++4-b", text: "std::cout", isCorrect: true },
+        { _id: "c++4-c", text: "echo()", isCorrect: false },
+        { _id: "c++4-d", text: "console.log()", isCorrect: false }
       ]
     },
     {
@@ -628,10 +612,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "The <iostream> header provides std::cin and std::cout.",
       options: [
-        { _id: "c++5-a", text: "<stdio.h>" },
-        { _id: "c++5-b", text: "<iostream>" },
-        { _id: "c++5-c", text: "<string>" },
-        { _id: "c++5-d", text: "<vector>" }
+        { _id: "c++5-a", text: "<stdio.h>", isCorrect: false },
+        { _id: "c++5-b", text: "<iostream>", isCorrect: true },
+        { _id: "c++5-c", text: "<string>", isCorrect: false },
+        { _id: "c++5-d", text: "<vector>", isCorrect: false }
       ]
     }
   ],
@@ -642,10 +626,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "C# was developed by Microsoft as part of the .NET platform.",
       options: [
-        { _id: "c#1-a", text: "Oracle" },
-        { _id: "c#1-b", text: "Microsoft" },
-        { _id: "c#1-c", text: "Google" },
-        { _id: "c#1-d", text: "IBM" }
+        { _id: "c#1-a", text: "Oracle", isCorrect: false },
+        { _id: "c#1-b", text: "Microsoft", isCorrect: true },
+        { _id: "c#1-c", text: "Google", isCorrect: false },
+        { _id: "c#1-d", text: "IBM", isCorrect: false }
       ]
     },
     {
@@ -654,10 +638,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Classes in C# are declared using the class keyword.",
       options: [
-        { _id: "c#2-a", text: "object" },
-        { _id: "c#2-b", text: "struct" },
-        { _id: "c#2-c", text: "class" },
-        { _id: "c#2-d", text: "new" }
+        { _id: "c#2-a", text: "object", isCorrect: false },
+        { _id: "c#2-b", text: "struct", isCorrect: false },
+        { _id: "c#2-c", text: "class", isCorrect: true },
+        { _id: "c#2-d", text: "new", isCorrect: false }
       ]
     },
     {
@@ -666,10 +650,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Execution starts in the Main() method.",
       options: [
-        { _id: "c#3-a", text: "Start()" },
-        { _id: "c#3-b", text: "Main()" },
-        { _id: "c#3-c", text: "Run()" },
-        { _id: "c#3-d", text: "Execute()" }
+        { _id: "c#3-a", text: "Start()", isCorrect: false },
+        { _id: "c#3-b", text: "Main()", isCorrect: true },
+        { _id: "c#3-c", text: "Run()", isCorrect: false },
+        { _id: "c#3-d", text: "Execute()", isCorrect: false }
       ]
     },
     {
@@ -678,10 +662,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Single-line comments begin with //.",
       options: [
-        { _id: "c#4-a", text: "/* */" },
-        { _id: "c#4-b", text: "#" },
-        { _id: "c#4-c", text: "//" },
-        { _id: "c#4-d", text: "--" }
+        { _id: "c#4-a", text: "/* */", isCorrect: false },
+        { _id: "c#4-b", text: "#", isCorrect: false },
+        { _id: "c#4-c", text: "//", isCorrect: true },
+        { _id: "c#4-d", text: "--", isCorrect: false }
       ]
     },
     {
@@ -690,14 +674,13 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Objects are instantiated using the new keyword.",
       options: [
-        { _id: "c#5-a", text: "create" },
-        { _id: "c#5-b", text: "instance" },
-        { _id: "c#5-c", text: "new" },
-        { _id: "c#5-d", text: "object" }
+        { _id: "c#5-a", text: "create", isCorrect: false },
+        { _id: "c#5-b", text: "instance", isCorrect: false },
+        { _id: "c#5-c", text: "new", isCorrect: true },
+        { _id: "c#5-d", text: "object", isCorrect: false }
       ]
     }
   ],
-
   "SQL": [
     {
       _id: "sql-1",
@@ -705,10 +688,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "SELECT retrieves records from a database table.",
       options: [
-        { _id: "sql1-a", text: "GET" },
-        { _id: "sql1-b", text: "SELECT" },
-        { _id: "sql1-c", text: "FETCH" },
-        { _id: "sql1-d", text: "SHOW" }
+        { _id: "sql1-a", text: "GET", isCorrect: false },
+        { _id: "sql1-b", text: "SELECT", isCorrect: true },
+        { _id: "sql1-c", text: "FETCH", isCorrect: false },
+        { _id: "sql1-d", text: "SHOW", isCorrect: false }
       ]
     },
     {
@@ -717,10 +700,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "WHERE filters records based on a condition.",
       options: [
-        { _id: "sql2-a", text: "ORDER BY" },
-        { _id: "sql2-b", text: "GROUP BY" },
-        { _id: "sql2-c", text: "WHERE" },
-        { _id: "sql2-d", text: "HAVING" }
+        { _id: "sql2-a", text: "ORDER BY", isCorrect: false },
+        { _id: "sql2-b", text: "GROUP BY", isCorrect: false },
+        { _id: "sql2-c", text: "WHERE", isCorrect: true },
+        { _id: "sql2-d", text: "HAVING", isCorrect: false }
       ]
     },
     {
@@ -729,10 +712,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "INSERT INTO adds new rows to a table.",
       options: [
-        { _id: "sql3-a", text: "CREATE" },
-        { _id: "sql3-b", text: "UPDATE" },
-        { _id: "sql3-c", text: "INSERT INTO" },
-        { _id: "sql3-d", text: "ALTER" }
+        { _id: "sql3-a", text: "CREATE", isCorrect: false },
+        { _id: "sql3-b", text: "UPDATE", isCorrect: false },
+        { _id: "sql3-c", text: "INSERT INTO", isCorrect: true },
+        { _id: "sql3-d", text: "ALTER", isCorrect: false }
       ]
     },
     {
@@ -741,10 +724,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "ORDER BY sorts records in ascending or descending order.",
       options: [
-        { _id: "sql4-a", text: "SORT BY" },
-        { _id: "sql4-b", text: "GROUP BY" },
-        { _id: "sql4-c", text: "ORDER BY" },
-        { _id: "sql4-d", text: "ARRANGE" }
+        { _id: "sql4-a", text: "SORT BY", isCorrect: false },
+        { _id: "sql4-b", text: "GROUP BY", isCorrect: false },
+        { _id: "sql4-c", text: "ORDER BY", isCorrect: true },
+        { _id: "sql4-d", text: "ARRANGE", isCorrect: false }
       ]
     },
     {
@@ -753,14 +736,13 @@ export const guestQuizzes = {
       points: 1,
       explanation: "COUNT() returns the total number of matching rows.",
       options: [
-        { _id: "sql5-a", text: "TOTAL()" },
-        { _id: "sql5-b", text: "COUNT()" },
-        { _id: "sql5-c", text: "SUM()" },
-        { _id: "sql5-d", text: "ROWS()" }
+        { _id: "sql5-a", text: "TOTAL()", isCorrect: false },
+        { _id: "sql5-b", text: "COUNT()", isCorrect: true },
+        { _id: "sql5-c", text: "SUM()", isCorrect: false },
+        { _id: "sql5-d", text: "ROWS()", isCorrect: false }
       ]
     }
   ],
-
   "Data Structures": [
     {
       _id: "ds-1",
@@ -768,10 +750,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Stacks remove the most recently added element first.",
       options: [
-        { _id: "ds1-a", text: "Queue" },
-        { _id: "ds1-b", text: "Stack" },
-        { _id: "ds1-c", text: "Tree" },
-        { _id: "ds1-d", text: "Graph" }
+        { _id: "ds1-a", text: "Queue", isCorrect: false },
+        { _id: "ds1-b", text: "Stack", isCorrect: true },
+        { _id: "ds1-c", text: "Tree", isCorrect: false },
+        { _id: "ds1-d", text: "Graph", isCorrect: false }
       ]
     },
     {
@@ -780,10 +762,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Queues process elements in the order they are inserted.",
       options: [
-        { _id: "ds2-a", text: "Stack" },
-        { _id: "ds2-b", text: "Queue" },
-        { _id: "ds2-c", text: "Tree" },
-        { _id: "ds2-d", text: "Linked List" }
+        { _id: "ds2-a", text: "Stack", isCorrect: false },
+        { _id: "ds2-b", text: "Queue", isCorrect: true },
+        { _id: "ds2-c", text: "Tree", isCorrect: false },
+        { _id: "ds2-d", text: "Linked List", isCorrect: false }
       ]
     },
     {
@@ -792,10 +774,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "A hash table (hash map) stores key-value pairs.",
       options: [
-        { _id: "ds3-a", text: "Stack" },
-        { _id: "ds3-b", text: "Hash Table" },
-        { _id: "ds3-c", text: "Queue" },
-        { _id: "ds3-d", text: "Array" }
+        { _id: "ds3-a", text: "Stack", isCorrect: false },
+        { _id: "ds3-b", text: "Hash Table", isCorrect: true },
+        { _id: "ds3-c", text: "Queue", isCorrect: false },
+        { _id: "ds3-d", text: "Array", isCorrect: false }
       ]
     },
     {
@@ -804,10 +786,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Preorder traversal visits the root before recursively visiting its children.",
       options: [
-        { _id: "ds4-a", text: "Inorder" },
-        { _id: "ds4-b", text: "Postorder" },
-        { _id: "ds4-c", text: "Preorder" },
-        { _id: "ds4-d", text: "Level Order" }
+        { _id: "ds4-a", text: "Inorder", isCorrect: false },
+        { _id: "ds4-b", text: "Postorder", isCorrect: false },
+        { _id: "ds4-c", text: "Preorder", isCorrect: true },
+        { _id: "ds4-d", text: "Level Order", isCorrect: false }
       ]
     },
     {
@@ -816,14 +798,13 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Array indexing is a constant-time operation: O(1).",
       options: [
-        { _id: "ds5-a", text: "O(n)" },
-        { _id: "ds5-b", text: "O(log n)" },
-        { _id: "ds5-c", text: "O(1)" },
-        { _id: "ds5-d", text: "O(n²)" }
+        { _id: "ds5-a", text: "O(n)", isCorrect: false },
+        { _id: "ds5-b", text: "O(log n)", isCorrect: false },
+        { _id: "ds5-c", text: "O(1)", isCorrect: true },
+        { _id: "ds5-d", text: "O(n²)", isCorrect: false }
       ]
     }
   ],
-
   "Algorithms": [
     {
       _id: "algo-1",
@@ -831,10 +812,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Binary Search repeatedly divides the search space in half.",
       options: [
-        { _id: "algo1-a", text: "Linear Search" },
-        { _id: "algo1-b", text: "Binary Search" },
-        { _id: "algo1-c", text: "Bubble Sort" },
-        { _id: "algo1-d", text: "Quick Sort" }
+        { _id: "algo1-a", text: "Linear Search", isCorrect: false },
+        { _id: "algo1-b", text: "Binary Search", isCorrect: true },
+        { _id: "algo1-c", text: "Bubble Sort", isCorrect: false },
+        { _id: "algo1-d", text: "Quick Sort", isCorrect: false }
       ]
     },
     {
@@ -843,10 +824,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Binary Search runs in O(log n) on sorted data.",
       options: [
-        { _id: "algo2-a", text: "O(1)" },
-        { _id: "algo2-b", text: "O(log n)" },
-        { _id: "algo2-c", text: "O(n)" },
-        { _id: "algo2-d", text: "O(n²)" }
+        { _id: "algo2-a", text: "O(1)", isCorrect: false },
+        { _id: "algo2-b", text: "O(log n)", isCorrect: true },
+        { _id: "algo2-c", text: "O(n)", isCorrect: false },
+        { _id: "algo2-d", text: "O(n²)", isCorrect: false }
       ]
     },
     {
@@ -855,10 +836,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Bubble Sort repeatedly compares adjacent elements.",
       options: [
-        { _id: "algo3-a", text: "Merge Sort" },
-        { _id: "algo3-b", text: "Bubble Sort" },
-        { _id: "algo3-c", text: "Quick Sort" },
-        { _id: "algo3-d", text: "Heap Sort" }
+        { _id: "algo3-a", text: "Merge Sort", isCorrect: false },
+        { _id: "algo3-b", text: "Bubble Sort", isCorrect: true },
+        { _id: "algo3-c", text: "Quick Sort", isCorrect: false },
+        { _id: "algo3-d", text: "Heap Sort", isCorrect: false }
       ]
     },
     {
@@ -867,10 +848,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Dijkstra's algorithm efficiently computes shortest paths.",
       options: [
-        { _id: "algo4-a", text: "Depth-First Search" },
-        { _id: "algo4-b", text: "Breadth-First Search" },
-        { _id: "algo4-c", text: "Dijkstra's Algorithm" },
-        { _id: "algo4-d", text: "Bubble Sort" }
+        { _id: "algo4-a", text: "Depth-First Search", isCorrect: false },
+        { _id: "algo4-b", text: "Breadth-First Search", isCorrect: false },
+        { _id: "algo4-c", text: "Dijkstra's Algorithm", isCorrect: true },
+        { _id: "algo4-d", text: "Bubble Sort", isCorrect: false }
       ]
     },
     {
@@ -879,10 +860,10 @@ export const guestQuizzes = {
       points: 1,
       explanation: "Binary Search only works correctly on sorted collections.",
       options: [
-        { _id: "algo5-a", text: "Linear Search" },
-        { _id: "algo5-b", text: "Binary Search" },
-        { _id: "algo5-c", text: "Depth-First Search" },
-        { _id: "algo5-d", text: "Breadth-First Search" }
+        { _id: "algo5-a", text: "Linear Search", isCorrect: false },
+        { _id: "algo5-b", text: "Binary Search", isCorrect: true },
+        { _id: "algo5-c", text: "Depth-First Search", isCorrect: false },
+        { _id: "algo5-d", text: "Breadth-First Search", isCorrect: false }
       ]
     }
   ]

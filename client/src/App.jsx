@@ -10,31 +10,12 @@ import Statistics from "./pages/Statistics";
 import ProfilePage from "./pages/Profile";
 import HistoryPage from "./pages/History";
 import ScrollToTop from "./components/ScrollToTop";
-import { isGuestMode } from "./services/api";
 
-// Redirects guests away from registered-only pages
-function GuestGuard({ children }) {
-  const location = useLocation();
-  if (!isGuestMode()) return children;
-
-  // Guests may only access: auth, dashboard, quiz-menu, difficulty (any subject), and easy quizzes
-  const path = location.pathname;
-  const allowedPrefixes = ["/auth", "/dashboard", "/quiz-menu", "/score"];
-  const isDifficultyPage = path.startsWith("/difficulty/");
-  const isEasyQuiz = path.startsWith("/quiz/") && path.endsWith("/easy");
-
-  if (allowedPrefixes.some(p => path.startsWith(p)) || isDifficultyPage || isEasyQuiz) {
-    return children;
-  }
-
-  return <Navigate to="/dashboard" replace />;
-}
 
 function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
-      <GuestGuard>
         <Routes>
           <Route path="/" element={<Navigate to="/auth" />} />
           <Route path="/auth" element={<AuthPage />} />
@@ -48,7 +29,6 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/history" element={<HistoryPage />} />
         </Routes>
-      </GuestGuard>
     </BrowserRouter>
   );
 }

@@ -34,6 +34,27 @@ export default function Leaderboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  if (isGuestMode()) {
+    return (
+      <div className="leaderboard-page">
+        <Navbar />
+        <main className="leaderboard-main" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '100px 20px' }}>
+          <button className="btn-back" onClick={() => navigate("/dashboard")} style={{ alignSelf: 'flex-start', marginBottom: '24px' }}>← Back to Dashboard</button>
+          <div className="guest-lock-card">
+            <span className="guest-lock-icon">🔒</span>
+            <h2 className="guest-lock-title">Leaderboard Locked</h2>
+            <p className="guest-lock-desc">
+              Leaderboard standings are only available to registered QuizForge players. Create an account to compete globally and see where you stand!
+            </p>
+            <button className="btn-guest-register" onClick={() => navigate("/auth")}>
+              Sign Up / Log In
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   useEffect(() => {
     // Load current user
     const storedUser = localStorage.getItem("quizforge_user");
@@ -67,27 +88,6 @@ export default function Leaderboard() {
 
     fetchLeaderboard();
   }, []);
-
-  if (isGuestMode()) {
-    return (
-      <div className="leaderboard-page">
-        <Navbar />
-        <main className="leaderboard-main" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '80vh', padding: '100px 20px' }}>
-          <button className="btn-back" onClick={() => navigate("/dashboard")} style={{ alignSelf: 'flex-start', marginBottom: '24px' }}>← Back to Dashboard</button>
-          <div className="guest-lock-card">
-            <span className="guest-lock-icon">🔒</span>
-            <h2 className="guest-lock-title">Leaderboard Locked</h2>
-            <p className="guest-lock-desc">
-              Leaderboard standings are only available to registered QuizForge players. Create an account to compete globally and see where you stand!
-            </p>
-            <button className="btn-guest-register" onClick={() => navigate("/auth")}>
-              Sign Up / Log In
-            </button>
-          </div>
-        </main>
-      </div>
-    );
-  }
 
   return (
     <div className="leaderboard-page">
