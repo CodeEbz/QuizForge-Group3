@@ -19,7 +19,10 @@ const submitAttempt = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Quiz not found.");
   }
 
+  // ✅ Duplicate attempts are allowed – removed the 409 check
+
   let score = 0;
+  let totalPossible = 0;
   const processedAnswers = [];
 
   for (const ans of answers) {
@@ -27,6 +30,9 @@ const submitAttempt = asyncHandler(async (req, res) => {
     if (!question) {
       throw new ApiError(400, `Question ${ans.questionId} not found.`);
     }
+
+    const points = question.points || 1;
+    totalPossible += points;
 
     let isCorrect = false;
     if (ans.selectedOptionId) {
@@ -36,7 +42,7 @@ const submitAttempt = asyncHandler(async (req, res) => {
       }
       isCorrect = selectedOption.isCorrect === true;
       if (isCorrect) {
-        score += question.points || 1;
+        score += points;
       }
     }
 
@@ -47,12 +53,9 @@ const submitAttempt = asyncHandler(async (req, res) => {
     });
   }
 
-    const existingAttempt = await Attempt.findOne({ user: req.user._id, quiz: quizId });
-    if (existingAttempt) {
-      throw new ApiError(409, 'You have already submitted this quiz. Duplicate attempts are not allowed.');
-    }
+  // ✅ totalQuestions = number of answers submitted (20/30/50)
+  const totalQuestions = answers.length;
 
-  const totalPossible = quiz.questions.reduce((sum, q) => sum + (q.points || 1), 0);
   const percentage = totalPossible > 0 ? (score / totalPossible) * 100 : 0;
 
   const attempt = await Attempt.create({
@@ -73,7 +76,7 @@ const submitAttempt = asyncHandler(async (req, res) => {
     data: {
       attemptId: attempt._id,
       score: attempt.score,
-      totalQuestions: quiz.questionCount,
+      totalQuestions,
       totalPossible: attempt.totalPossible,
       percentage: attempt.percentage,
     },
@@ -84,24 +87,41 @@ const submitAttempt = asyncHandler(async (req, res) => {
  * Get current user's quiz attempts history
  * GET /api/attempts/my
  */
+/**
+ * Get current user's quiz attempts history
+ * GET /api/attempts/my
+ */
 const getMyAttempts = asyncHandler(async (req, res) => {
   const attempts = await Attempt.find({ user: req.user._id })
     .populate('quiz', 'title subject difficulty')
     .sort({ createdAt: -1 });
 
-  const formatted = attempts.map((attempt) => ({
-    id: attempt._id,
-    quizId: attempt.quiz?._id,
-    quizTitle: attempt.quiz?.title || (attempt.subject ? `${attempt.subject} Quiz` : 'Untitled Quiz'),
-    // ✅ FIXED: Use quiz.subject FIRST, then attempt.subject as fallback
-    subject: attempt.quiz?.subject || attempt.subject || 'General',
-    difficulty: attempt.quiz?.difficulty || attempt.difficulty || 'medium',
-    score: attempt.score,
-    totalPossible: attempt.totalPossible,
-    percentage: Math.round(attempt.percentage || 0),
-    timeTakenSeconds: attempt.timeTakenSeconds || 0,
-    createdAt: attempt.createdAt,
-  }));
+  const formatted = attempts.map((attempt) => {
+    // Get the subject from quiz or attempt
+    const subject = attempt.quiz?.subject || attempt.subject || 'General';
+    
+    // ✅ Clean title: if it contains "Pool", use subject + "Quiz"
+    const rawTitle = attempt.quiz?.title || '';
+    let quizTitle;
+    if (rawTitle.includes('Pool') || rawTitle.includes('pool')) {
+      quizTitle = `${subject} Quiz`;
+    } else {
+      quizTitle = rawTitle || `${subject} Quiz`;
+    }
+
+    return {
+      id: attempt._id,
+      quizId: attempt.quiz?._id,
+      quizTitle: quizTitle, // ✅ Now shows "HTML Quiz" instead of "HTML Pool (easy)"
+      subject: subject,
+      difficulty: attempt.quiz?.difficulty || attempt.difficulty || 'medium',
+      score: attempt.score,
+      totalPossible: attempt.totalPossible,
+      percentage: Math.round(attempt.percentage || 0),
+      timeTakenSeconds: attempt.timeTakenSeconds || 0,
+      createdAt: attempt.createdAt,
+    };
+  });
 
   res.json({
     success: true,

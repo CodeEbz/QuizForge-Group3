@@ -117,110 +117,110 @@ export default function QuizPage() {
   }, [subject, difficulty, config, navigate]);
 
   // Handle quiz submission (Guest + Registered)
-  const handleSubmit = useCallback(async () => {
-    // ✅ Prevent duplicate submissions
-    if (submittedRef.current || submitting) return;
-    submittedRef.current = true;
-    setSubmitting(true);
+const handleSubmit = useCallback(async () => {
+  if (submittedRef.current || submitting) return;
+  submittedRef.current = true;
+  setSubmitting(true);
+  setIsGrading(true);
+  const timeTakenSeconds = config.time - timeLeft;
 
-    setIsGrading(true);
-    const timeTakenSeconds = config.time - timeLeft;
+  // ---- GUEST MODE ----
+  if (isGuestMode()) {
+    let localScore = 0;
+    const gradedQuestions = questions.map((q, idx) => {
+      const userAns = answers[idx];
+      const correctIdx = q.options.findIndex(o => o.isCorrect);
+      const isCorrect = userAns && userAns.selectedOptionIndex === correctIdx;
+      if (isCorrect) localScore++;
+      return {
+        question: q.questionText,
+        options: q.options.map(o => o.text),
+        correct: correctIdx,
+        isCorrect: isCorrect,
+        explanation: q.explanation || "No explanation provided.",
+      };
+    });
 
-    // ✅ GUEST MODE: Grade locally, skip API
-    if (isGuestMode()) {
+    navigate("/score", {
+      state: {
+        score: localScore,
+        total: questions.length,
+        subject: subjectName,
+        difficulty: config.label,
+        answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
+        questions: gradedQuestions,
+        isOffline: false,
+        tagged: taggedQuestions,
+      },
+    });
+    setIsGrading(false);
+    setSubmitting(false);
+    return;
+  }
+
+  // ---- REGISTERED USER ----
+  try {
+    const formattedAnswers = answers.map((ans, idx) => ({
+      questionId: questions[idx]._id,
+      selectedOptionId: ans ? ans.selectedOptionId : null,
+    }));
+
+    const submitRes = await api.submitAttempt({
+      quizId,
+      answers: formattedAnswers,
+      timeTakenSeconds,
+    });
+
+    if (submitRes.success) {
+      // ✅ Grade using correctOptionId (only available for generated quizzes)
       let localScore = 0;
       const gradedQuestions = questions.map((q, idx) => {
         const userAns = answers[idx];
-        const correctIdx = q.options.findIndex(o => o.isCorrect);
-        const isCorrect = userAns && userAns.selectedOptionIndex === correctIdx;
+        const isCorrect = userAns && userAns.selectedOptionId === q.correctOptionId;
         if (isCorrect) localScore++;
-        
         return {
           question: q.questionText,
           options: q.options.map(o => o.text),
-          correct: correctIdx,
+          correctOptionId: q.correctOptionId,
+          isCorrect: isCorrect,
           explanation: q.explanation || "No explanation provided.",
         };
       });
 
       navigate("/score", {
         state: {
-          score: localScore,
-          total: questions.length,
-          subject: subjectName,
-          difficulty: config.label,
+          score: submitRes.data.score ?? localScore,
+          total: submitRes.data.totalQuestions ?? questions.length,
+          subject: subjectName || "Unknown",
+          difficulty: config.label || "Easy",
           answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
           questions: gradedQuestions,
           isOffline: false,
-          tagged: taggedQuestions,
+          tagged: taggedQuestions || [],
         },
       });
-      
-      setIsGrading(false);
-      setSubmitting(false);
-      return;
+    } else {
+      setError(submitRes.error || "Submission failed. Please try again.");
+      submittedRef.current = false;
     }
-
-    // ✅ REGISTERED USER: Submit to API
-    try {
-      const formattedAnswers = answers.map((ans, idx) => ({
-        questionId: questions[idx]._id,
-        selectedOptionId: ans ? ans.selectedOptionId : null,
-      }));
-
-      const submitRes = await api.submitAttempt({
-        quizId,
-        answers: formattedAnswers,
-        timeTakenSeconds,
-      });
-
-      if (submitRes.success) {
-        const reviewRes = await api.getQuizForReview(quizId);
-        const reviewQuestions = questions.map((q, idx) => {
-          const correctIdx = reviewRes.data.questions[idx].options.findIndex(o => o.isCorrect);
-          return {
-            question: q.questionText,
-            options: q.options.map(o => o.text),
-            correct: correctIdx >= 0 ? correctIdx : 0,
-            explanation: q.explanation || reviewRes.data.questions[idx].explanation || "No explanation provided.",
-          };
-        });
-
-        navigate("/score", {
-          state: {
-            score: submitRes.data.score ?? 0,
-            total: submitRes.data.totalQuestions ?? 0,
-            subject: subjectName || "Unknown",
-            difficulty: config.label || "Easy",
-            answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
-            questions: reviewQuestions || [],
-            isOffline: false,
-            tagged: taggedQuestions || [],
-          },
-        });
-      } else {
-        setError(submitRes.error || "Submission failed. Please try again.");
-        submittedRef.current = false; // allow retry on error
-      }
-    } catch (err) {
-      console.error("Submit failed:", err);
-      if (err.status === 401) {
-        setError("Session expired. Please log in again.");
-      } else {
-        setError("Failed to submit quiz. Please check your connection.");
-      }
-      submittedRef.current = false; // allow retry on error
-    } finally {
-      setIsGrading(false);
-      setSubmitting(false);
+  } catch (err) {
+    console.error("Submit failed:", err);
+    if (err.status === 401) {
+      setError("Session expired. Please log in again.");
+    } else {
+      setError("Failed to submit quiz. Please check your connection.");
     }
-  }, [answers, questions, quizId, timeLeft, config, subjectName, navigate, taggedQuestions, submitting]);
-
+    submittedRef.current = false;
+  } finally {
+    setIsGrading(false);
+    setSubmitting(false);
+  }
+}, [answers, questions, quizId, timeLeft, config, subjectName, navigate, taggedQuestions, submitting]);
 
   // Timer auto-submit
   useEffect(() => {
     if (loading) return;
-    if (submittedRef.current) return; // ✅ already submitted
+    if (submittedRef.current) return;
     if (timeLeft <= 0) {
       handleSubmit();
       return;

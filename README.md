@@ -23,6 +23,7 @@
 ## ✨ Key Features
 
 * **AI-Generated Quizzes**: Uses Groq's Llama 3.1 models to generate unique, topic-specific questions on demand.
+* **Smart Question Pooling**: For each subject and difficulty, the system generates a pool of questions (30 for Easy, 40 for Medium, 60 for Hard) and randomly selects the exact number needed (20/30/50). This ensures fast loading, uniqueness, and efficient caching.
 * **15+ Subjects**: JavaScript, React, Python, Algorithms, Data Structures, HTML, CSS, MongoDB, Node.js, Express, Java, C++, C#, SQL, and more.
 * **3 Difficulty Levels**: Easy (20 Qs), Medium (30 Qs), Hard (50 Qs) with built-in timers.
 * **Instant Scoring & Explanations**: Automatic grading with detailed answer reviews and AI-generated explanations.
@@ -32,6 +33,7 @@
 * **Performance Analytics**: Visual breakdown of performance by subject and difficulty.
 * **Flag for Review**: Mark questions you're unsure about and revisit them during review.
 * **Responsive UI**: Works seamlessly across desktop and mobile devices.
+* **User Profile**: Displays user name and email – editing has been removed for simplicity and security.
 
 ---
 
@@ -47,8 +49,8 @@
 * **Server**: Express, Node.js
 * **Database**: MongoDB, Mongoose ODM
 * **Security & Middleware**: Helmet, CORS, Express Rate Limit, Morgan, BCryptJS, JSONWebToken
-* **AI Integration**: Groq SDK (llama-3.1-8b-instant / llama-3.3-70b-versatile)
-* **Fallback API**: Open Trivia DB (Category 18 – Computers)
+* **AI Integration**: Groq SDK (llama-3.1-8b-instant / llama-3.3-70b-versatile) – direct API integration (no OpenRouter)
+* **Fallback API**: Open Trivia DB (Category 18 – Computers) for the "Other" subject
 * **Validation**: Express Validator
 
 ---
@@ -60,7 +62,7 @@ The repository is structured as two distinct, isolated sub‑projects:
 ### 📱 Client (`client/`)
 Contains the React frontend, static assets, styling, and API service layer.
 
-
+```
 client/
 ├── public/
 │   ├── favicon.ico
@@ -81,58 +83,61 @@ client/
 │   │   ├── QuizMenu.jsx          # Topic-wise selector
 │   │   ├── QuizPage.jsx          # Interactive quiz taking panel (questions, timer)
 │   │   ├── ScorePage.jsx         # Detailed grading scorecard and answer review
-│   │   └── Statistics.jsx        # Visual performance metrics by subject/difficulty
+│   │   ├── Statistics.jsx        # Visual performance metrics by subject/difficulty
+│   │   └── ProfilePage.jsx       # User profile (read‑only name & email)
 │   ├── services/
 │   │   └── api.js                # API request engine (handles headers, tokens, guest mode)
 │   ├── styles/                   # Custom vanilla CSS modules
 │   ├── App.jsx                   # Main routing configuration
 │   └── main.jsx                  # React application mount
-
+```
 
 ### ⚙ Server (`server/`)
 Contains the Express REST API, MongoDB schemas, and AI integration services.
 
+```
 server/
 ├── src/
-│ ├── config/
-│ │ └── db.js # Mongoose connection config
-│ ├── controllers/
-│ │ ├── attemptController.js # Quiz submission grading and attempt creation
-│ │ ├── authController.js # User registration, login, and auth state
-│ │ ├── leaderboardController.js # Aggregations for user rankings
-│ │ ├── quizController.js # Queries for quiz structures
-│ │ ├── statsController.js # Metric aggregations for user statistics
-│ │ └── dynamicQuizController.js # AI-driven quiz generation
-│ ├── middleware/
-│ │ ├── authMiddleware.js # Validates JWT bearer tokens
-│ │ ├── errorMiddleware.js # Express central error handler
-│ │ └── validateMiddleware.js # Processes validation results
-│ ├── models/
-│ │ ├── Attempt.js # User attempt schema (with subject/difficulty)
-│ │ ├── Quiz.js # Quiz and question structures
-│ │ └── User.js # User information schema
-│ ├── routes/
-│ │ ├── attemptRoutes.js # Routes for attempt submissions and history
-│ │ ├── authRoutes.js # Routes for login and registration
-│ │ ├── leaderboardRoutes.js # Routes for ranking requests
-│ │ ├── quizRoutes.js # Routes for quiz listings and generation
-│ │ └── statsRoutes.js # Routes for statistics retrievals
-│ ├── services/
-│ │ ├── groqService.js # Integration with Groq AI API
-│ │ └── triviaService.js # Fallback service using Open Trivia DB
-│ ├── utils/
-│ │ ├── ApiError.js # Custom API exception classes
-│ │ ├── asyncHandler.js # Express route try-catch wrapper
-│ │ ├── generateToken.js # Creates JWT for authenticated users
-│ │ └── seed.js # Database seeding script for static quizzes
-│ └── validators/
-│ ├── attemptValidators.js # Schemas for validating attempts
-│ ├── authValidators.js # Schemas for validating registry forms
-│ └── quizValidators.js # Schemas for validating quiz creations
-├── .env.example # Environment template
-└── server.js # Root entry point
+│   ├── config/
+│   │   └── db.js                 # Mongoose connection config
+│   ├── controllers/
+│   │   ├── attemptController.js  # Quiz submission grading and attempt creation
+│   │   ├── authController.js     # User registration, login, and auth state
+│   │   ├── leaderboardController.js # Aggregations for user rankings
+│   │   ├── quizController.js     # Queries for quiz structures
+│   │   ├── statsController.js    # Metric aggregations for user statistics
+│   │   └── dynamicQuizController.js # AI-driven quiz generation (with pooling)
+│   ├── middleware/
+│   │   ├── authMiddleware.js     # Validates JWT bearer tokens
+│   │   ├── errorMiddleware.js    # Express central error handler
+│   │   └── validateMiddleware.js # Processes validation results
+│   ├── models/
+│   │   ├── Attempt.js            # User attempt schema (with subject/difficulty)
+│   │   ├── Quiz.js               # Quiz and question structures (supports pool flag)
+│   │   └── User.js               # User information schema
+│   ├── routes/
+│   │   ├── attemptRoutes.js      # Routes for attempt submissions and history
+│   │   ├── authRoutes.js         # Routes for login and registration
+│   │   ├── leaderboardRoutes.js  # Routes for ranking requests
+│   │   ├── quizRoutes.js         # Routes for quiz listings and generation
+│   │   └── statsRoutes.js        # Routes for statistics retrievals
+│   ├── services/
+│   │   ├── groqService.js        # Integration with Groq AI API (pooling, deduplication)
+│   │   └── triviaService.js      # Fallback service using Open Trivia DB
+│   ├── utils/
+│   │   ├── ApiError.js           # Custom API exception classes
+│   │   ├── asyncHandler.js       # Express route try-catch wrapper
+│   │   ├── generateToken.js      # Creates JWT for authenticated users
+│   │   └── seed.js               # Database seeding script for static quizzes
+│   └── validators/
+│       ├── attemptValidators.js  # Schemas for validating attempts
+│       ├── authValidators.js     # Schemas for validating registry forms
+│       └── quizValidators.js     # Schemas for validating quiz creations
+├── .env.example                  # Environment template
+└── server.js                     # Root entry point
+```
 
-
+---
 
 ## 🔌 API Endpoints
 
@@ -171,7 +176,7 @@ All endpoints are prefixed with `/api` and require a `Bearer <token>` in the `Au
 * **Onovo** (*Statistics Page*):
   - Authored the metrics panel (`Statistics.jsx`) with subject-based performance bars and difficulty breakdown.
 * **Ayo & Nath** (*Profile Page*):
-  - Programmed the account details settings page (`Profile.jsx`) enabling display name edits and logout actions.
+  - Programmed the account details settings page (`Profile.jsx`) – now a read‑only view showing user name and email with no edit functionality for simplicity.
 * **Oluwafaloba** (*UI/UX Design & Styling*):
   - Designed the premium dark theme, glassmorphic layout, responsive navbar, custom quiz widgets, and overall visual aesthetics.
 
@@ -181,9 +186,10 @@ All endpoints are prefixed with `/api` and require a `Bearer <token>` in the `Au
 * **Collins** (*Database Manager*):
   - Designed and maintained MongoDB schemas (User, Quiz, Attempt) with optimized indexes and seeding scripts.
 * **Neeza** (*AI Integration & Full-Stack Engineer*):
-  - Integrated Groq AI SDK (`groqService.js`) for dynamic question generation with Llama models, implemented fallback to Open Trivia DB for the "Other" category.
-  - Built the dynamic quiz generation endpoint and handled rate-limiting, chunked generation, and JSON parsing.
+  - Integrated Groq AI SDK (`groqService.js`) for dynamic question generation with Llama models, implementing **question pooling**, **exact‑match deduplication**, and **strict validation** to ensure high‑quality question banks.
+  - Built the dynamic quiz generation endpoint (`/quizzes/generate`) with fallback to Open Trivia DB for the "Other" category.
   - Developed guest mode support with predefined static quizzes and API mocking.
+  - Optimised generation by using parallel chunking and rate‑limit handling.
 
 ---
 
@@ -197,69 +203,63 @@ All endpoints are prefixed with `/api` and require a `Bearer <token>` in the `Au
 1. Navigate to the server folder:
    ```bash
    cd server
-Install dependencies:
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Copy `.env.example` to `.env` and fill in your credentials:
+   - `MONGODB_URI` – your MongoDB connection string
+   - `JWT_SECRET` – a strong random secret
+   - `GROQ_API_KEY` – your API key from Groq Console
+4. Seed the database with initial quiz data (optional):
+   ```bash
+   npm run seed
+   ```
+5. Start the backend development server:
+   ```bash
+   npm run dev
+   ```
+   The server runs on `http://localhost:5000`.
 
-bash
-npm install
-Copy .env.example to .env and fill in your credentials:
+### Step 2: Set up the Client
+1. Navigate to the client folder:
+   ```bash
+   cd ../client
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the Vite React development server:
+   ```bash
+   npm run dev
+   ```
+   The client runs on `http://localhost:5173`.
 
-MONGODB_URI – your MongoDB connection string
+---
 
-JWT_SECRET – a strong random secret
+## 🌐 Production Deployment Guide
 
-GROQ_API_KEY – your API key from Groq Console
+### Server Deployment (e.g., Render)
+1. Create a Web Service pointing to your backend repository.
+2. Set environment variables:
+   - `PORT`: 10000 (Render handles this)
+   - `NODE_ENV`: production
+   - `MONGODB_URI`: your MongoDB Atlas connection string
+   - `JWT_SECRET`: a long, randomly generated secret
+   - `GROQ_API_KEY`: your Groq API key
+   - `CLIENT_ORIGINS`: your frontend URL (e.g., `https://quizforge.vercel.app`)
 
-Seed the database with initial quiz data (optional):
+### Client Deployment (e.g., Vercel)
+1. Import the `client/` folder to Vercel.
+2. Update the `API_BASE` in `client/src/services/api.js` to point to your live backend:
+   ```javascript
+   const API_BASE = "https://your-backend-service.onrender.com/api";
+   ```
+3. Deploy – Vercel will build the React app and serve it via CDN.
 
-bash
-npm run seed
-Start the backend development server:
+---
 
-bash
-npm run dev
-The server runs on http://localhost:5000.
-
-Step 2: Set up the Client
-Navigate to the client folder:
-
-bash
-cd ../client
-Install dependencies:
-
-bash
-npm install
-Start the Vite React development server:
-
-bash
-npm run dev
-The client runs on http://localhost:5173.
-
-🌐 Production Deployment Guide
-Server Deployment (e.g., Render)
-Create a Web Service pointing to your backend repository.
-
-Set environment variables:
-
-PORT: 10000 (Render handles this)
-
-NODE_ENV: production
-
-MONGODB_URI: your MongoDB Atlas connection string
-
-JWT_SECRET: a long, randomly generated secret
-
-GROQ_API_KEY: your Groq API key
-
-CLIENT_ORIGINS: your frontend URL (e.g., https://quizforge.vercel.app)
-
-Client Deployment (e.g., Vercel)
-Import the client/ folder to Vercel.
-
-Update the API_BASE in client/src/services/api.js to point to your live backend:
-
-javascript
-const API_BASE = "https://your-backend-service.onrender.com/api";
-Deploy – Vercel will build the React app and serve it via CDN.
-
-Made with ❤️ by the QuizForge Team
+Made with ❤️ by the QuizForge Team  
 Last Updated: July 2026

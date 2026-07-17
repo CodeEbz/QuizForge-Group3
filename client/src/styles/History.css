@@ -159,27 +159,6 @@
   margin-top: 1px;
 }
 
-.btn-history-review {
-  background: var(--primary);
-  color: #fff;
-  font-family: var(--font-display);
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 8px 16px;
-  border-radius: var(--radius-sm);
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s, opacity 0.15s;
-}
-
-.btn-history-review:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.btn-history-review:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
 
 .history-action-header {
   text-align: right;
@@ -286,15 +265,6 @@
   cursor: pointer;
   transition: background 0.15s, opacity 0.15s;
   width: 100%;
-}
-
-.btn-history-review-mobile:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.btn-history-review-mobile:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 /* ── RESPONSIVE ── */

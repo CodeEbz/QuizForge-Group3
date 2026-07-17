@@ -14,10 +14,10 @@
   margin-bottom: 24px;
 }
 
-/* Top stat cards */
+/* Top stat cards — now 6 cards */
 .stat-cards-row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   gap: 14px;
   margin-bottom: 24px;
 }
@@ -25,10 +25,11 @@
 .stat-mini-card {
   border-radius: var(--radius-lg);
   padding: 16px;
-  border: 1px solid;
+  border: 1px solid var(--blue-border);
+  background: var(--blue-bg);
 }
 
-.stat-mini-icon { font-size: 1.2rem; margin-bottom: 8px; }
+.stat-mini-icon { font-size: 1.2rem; margin-bottom: 10px; }
 
 .stat-mini-value {
   font-family: var(--font-display);
@@ -36,6 +37,7 @@
   font-weight: 900;
   line-height: 1.2;
   margin-bottom: 4px;
+  color: var(--blue);
 }
 
 .stat-mini-label { font-size: 0.72rem; color: var(--text-muted); }
@@ -130,6 +132,10 @@
 }
 
 .diff-breakdown-sub { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+
+@media (max-width: 1200px) {
+  .stat-cards-row { grid-template-columns: repeat(3, 1fr); }
+}
 
 @media (max-width: 900px) {
   .statistics-main { margin-left: 0; padding: 80px 22px 32px; }

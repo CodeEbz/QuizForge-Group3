@@ -85,13 +85,17 @@ const quizSchema = new mongoose.Schema(
     },
     generatedBy: {
       type: String,
-      enum: ["groq", "opentdb", "openrouter", "openai"],
-      default: "groq"
+      enum: ["opentdb", "openrouter", "openai", "pool"],
+      default: "openrouter"
     },
     questionCount: {
       type: Number,
       required: true,
-      enum: [20, 30, 50]
+      min: 1,
+    },
+    isPool: {
+      type: Boolean,
+      default: false,
     }
   },
   { timestamps: true }

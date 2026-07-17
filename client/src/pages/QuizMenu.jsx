@@ -41,6 +41,9 @@ export default function QuizMenuPage() {
     <div className="quiz-menu-page">
       <Navbar />
       <main className="quiz-menu-main">
+        <button className="btn-back" onClick={() => navigate("/dashboard")}>
+          ← Back to Dashboard
+        </button>
         <h1 className="quiz-menu-title">Choose a Subject</h1>
         <p className="quiz-menu-sub">15 subjects available · Select one to start your quiz</p>
 

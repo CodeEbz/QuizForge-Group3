@@ -26,13 +26,12 @@ const subjectColors = {
 
 const getSubjectColor = (subject) => {
   if (subjectColors[subject]) return subjectColors[subject];
-  // Generate a deterministic soft color for unknown subjects
   let hash = 0;
   for (let i = 0; i < subject.length; i++) {
     hash = subject.charCodeAt(i) + ((hash << 5) - hash);
   }
   const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 40%, 60%)`; // muted saturation
+  return `hsl(${hue}, 40%, 60%)`;
 };
 
 export default function Statistics() {
@@ -75,13 +74,13 @@ export default function Statistics() {
   }, [])
 
   const categoryMap = {}
-  let favCategory = "N/A"
+  let favCategory = "N/A"   // most attempted
+  let bestCategory = "N/A"  // highest average score
   let maxCatCount = 0
 
   const difficultyMap = { easy: 0, medium: 0, hard: 0 }
   let favDifficulty = "Medium"
 
-  // Skip 'General' subjects
   recentAttempts.forEach(attempt => {
     const category = attempt.subject || "General"
     if (category === 'General' || category === 'general') return;
@@ -95,6 +94,7 @@ export default function Statistics() {
     categoryMap[category].count += 1
     categoryMap[category].totalPct += attempt.percentage || 0
 
+    // Fav. Subject = most attempted
     if (categoryMap[category].count > maxCatCount) {
       maxCatCount = categoryMap[category].count
       favCategory = category.charAt(0).toUpperCase() + category.slice(1)
@@ -102,6 +102,16 @@ export default function Statistics() {
 
     if (difficultyMap[difficultyLower] !== undefined) {
       difficultyMap[difficultyLower] += 1
+    }
+  })
+
+  // Best Subject = highest average score (min 1 attempt)
+  let bestAvg = -1
+  Object.keys(categoryMap).forEach(cat => {
+    const avg = categoryMap[cat].totalPct / categoryMap[cat].count
+    if (avg > bestAvg) {
+      bestAvg = avg
+      bestCategory = cat.charAt(0).toUpperCase() + cat.slice(1)
     }
   })
 
@@ -115,6 +125,7 @@ export default function Statistics() {
 
   if (recentAttempts.length === 0) {
     favCategory = "None"
+    bestCategory = "None"
     favDifficulty = "None"
   }
 
@@ -129,19 +140,19 @@ export default function Statistics() {
     .sort((a, b) => b.avg - a.avg)
 
   const topStats = [
-    { label: "Total Quizzes",   value: statsData.totalAttempts, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "✦" },
-    { label: "Total Score",     value: `${statsData.totalScore} pts`, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "◈" },
-    { label: "Best Subject",    value: favCategory, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "⭐" },
-    { label: "Average Score",   value: `${statsData.averagePercentage}%`, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "◉" },
-    { label: "Fav. Difficulty", value: favDifficulty, color: "var(--blue)", bg: "var(--blue-bg)", border: "var(--blue-border)", icon: "⚡" },
+    { label: "Total Quizzes",   value: statsData.totalAttempts,           icon: "✦" },
+    { label: "Total Score",     value: `${statsData.totalScore} pts`,     icon: "◈" },
+    { label: "Best Subject",    value: bestCategory,                      icon: "⭐" },
+    { label: "Fav. Subject",    value: favCategory,                       icon: "🔥" },
+    { label: "Average Score",   value: `${statsData.averagePercentage}%`, icon: "◉" },
+    { label: "Fav. Difficulty", value: favDifficulty,                     icon: "⚡" },
   ]
 
   const difficultyBreakdown = [
-    { label: "Easy",   count: difficultyMap.easy, color: "var(--green)",  bg: "var(--green-bg)",  border: "var(--green-border)"  },
+    { label: "Easy",   count: difficultyMap.easy,   color: "var(--green)",  bg: "var(--green-bg)",  border: "var(--green-border)"  },
     { label: "Medium", count: difficultyMap.medium, color: "var(--blue)",   bg: "var(--blue-bg)",   border: "var(--blue-border)"   },
-    { label: "Hard",   count: difficultyMap.hard, color: "var(--orange)", bg: "var(--orange-bg)", border: "var(--orange-border)" },
+    { label: "Hard",   count: difficultyMap.hard,   color: "var(--orange)", bg: "var(--orange-bg)", border: "var(--orange-border)" },
   ]
-
 
   return (
     <div className="statistics-page">
@@ -156,9 +167,9 @@ export default function Statistics() {
           <>
             <div className="stat-cards-row">
               {topStats.map(s => (
-                <div key={s.label} className="stat-mini-card" style={{ background: s.bg, borderColor: s.border }}>
+                <div key={s.label} className="stat-mini-card">
                   <div className="stat-mini-icon">{s.icon}</div>
-                  <div className="stat-mini-value" style={{ color: s.color }}>{s.value}</div>
+                  <div className="stat-mini-value">{s.value}</div>
                   <div className="stat-mini-label">{s.label}</div>
                 </div>
               ))}

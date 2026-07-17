@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import Navbar from "../components/Navbar"
-import GuestLock from "../components/GuestLock"
-import { api, isGuestMode } from "../services/api"
-import "../styles/Profile.css"
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import GuestLock from "../components/GuestLock";
+import { api, isGuestMode } from "../services/api";
+import "../styles/Profile.css";
 
 export default function ProfilePage() {
-  const navigate = useNavigate()
-  const [user, setUser] = useState({ name: "Explorer" })
-  const [editing, setEditing] = useState(false)
-  const [nameInput, setNameInput] = useState("")
+  const navigate = useNavigate();
+  const [user, setUser] = useState({ name: "", email: "" });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // ✅ Guest lock – placed at the top to prevent blink
   if (isGuestMode()) {
@@ -23,24 +23,60 @@ export default function ProfilePage() {
   }
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("quizforge_user")
-    if (storedUser) {
-      const u = JSON.parse(storedUser)
-      setUser(u)
-      setNameInput(u.name || "")
-    }
-  }, [])
+    const fetchProfile = async () => {
+      try {
+        setLoading(true);
+        // ✅ Use api.getMe() – it returns user data including email
+        const response = await api.getMe();
+        if (response.success) {
+          setUser({
+            name: response.data.name || "Explorer",
+            email: response.data.email || "No email set",
+          });
+        } else {
+          setError("Failed to load profile.");
+        }
+      } catch (err) {
+        console.error("Profile fetch error:", err);
+        setError("Could not load profile data.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const handleSave = () => {
-    if (editing) {
-      const updatedUser = { ...user, name: nameInput }
-      setUser(updatedUser)
-      localStorage.setItem("quizforge_user", JSON.stringify(updatedUser))
-    }
-    setEditing(!editing)
+    fetchProfile();
+  }, []);
+
+  const avatarLetter = (user.name || "A").charAt(0).toUpperCase();
+
+  if (loading) {
+    return (
+      <div className="profile-page">
+        <Navbar />
+        <main className="profile-main">
+          <div className="profile-card" style={{ textAlign: "center", padding: "40px" }}>
+            <p>Loading profile...</p>
+          </div>
+        </main>
+      </div>
+    );
   }
 
-  const avatarLetter = (user.name || "A").charAt(0).toUpperCase()
+  if (error) {
+    return (
+      <div className="profile-page">
+        <Navbar />
+        <main className="profile-main">
+          <div className="profile-card" style={{ textAlign: "center", padding: "40px", color: "var(--red)" }}>
+            <p>{error}</p>
+            <button className="btn-edit-profile" onClick={() => window.location.reload()}>
+              Retry
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-page">
@@ -64,36 +100,21 @@ export default function ProfilePage() {
             </div>
 
             <h2 className="profile-name">{user.name}</h2>
-            <p className="profile-member-tag">
-              {user.role === "guest" ? "Guest Member (Offline Mode)" : "QuizForge Member"}
-            </p>
+            <p className="profile-member-tag">QuizForge Member</p>
 
             <div className="profile-fields">
               <div>
                 <label className="profile-field-label">Display Name</label>
-                {editing ? (
-                  <input
-                    className="profile-field-input"
-                    type="text"
-                    value={nameInput}
-                    onChange={e => setNameInput(e.target.value)}
-                  />
-                ) : (
-                  <div className="profile-field-display">{user.name}</div>
-                )}
+                <div className="profile-field-display">{user.name}</div>
+              </div>
+              <div style={{ marginTop: "16px" }}>
+                <label className="profile-field-label">Email Address</label>
+                <div className="profile-field-display">{user.email}</div>
               </div>
             </div>
-
-            <button
-              className="btn-edit-profile"
-              style={{ background: editing ? "var(--green)" : "var(--primary)" }}
-              onClick={handleSave}
-            >
-              {editing ? "Save Changes" : "Edit Profile"}
-            </button>
           </div>
         </div>
       </main>
     </div>
-  )
+  );
 }

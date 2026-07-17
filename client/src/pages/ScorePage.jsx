@@ -74,36 +74,49 @@ export default function ScorePage() {
             {questions.length > 0 ? (
               questions.map((q, i) => {
                 const userAns = answers[i] ?? -1;
-                const correct = q.correct ?? 0;
-                const isCorrect = userAns === correct;
                 const isFlagged = tagged[i] || false;
+
+                // ✅ Use q.isCorrect directly – it's passed from QuizPage
+                // If it's undefined, use q.correct (correct index) to compare
+                let isCorrect = false;
+                if (q.isCorrect !== undefined) {
+                  isCorrect = q.isCorrect === true;
+                } else if (q.correct !== undefined) {
+                  // Fallback: compare user's answer index to correct index
+                  isCorrect = userAns === q.correct;
+                }
 
                 return (
                   <div key={i} className={`answer-item ${isCorrect ? "correct" : "wrong"}`}>
-                    {/* ✅ Header: only question number and flagged badge (no Correct/Incorrect label) */}
                     <div className="answer-q-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <p className="answer-q-num" style={{ marginBottom: 0, fontWeight: 'bold' }}>
                         Q{i + 1} {isFlagged && <span style={{ color: 'var(--orange)', marginLeft: '8px' }}>🚩 Flagged</span>}
                       </p>
-                      {/* ✅ Removed the "✓ Correct / ✗ Incorrect" badge */}
                     </div>
 
                     <p className="answer-q-text">{q.question || q.questionText || "Question text missing"}</p>
 
                     {q.options && q.options.map((opt, j) => {
-                      const isCorrectOption = j === correct;
+                      const optionText = typeof opt === 'string' ? opt : opt.text || `Option ${j+1}`;
                       const isUserOption = j === userAns;
+                      const isCorrectOption = q.correct !== undefined ? j === q.correct : false;
+
                       let style = { color: "var(--text-muted)" };
-                      if (isCorrectOption) style = { color: "var(--green)", fontWeight: 700 };
-                      else if (isUserOption && !isCorrect) style = { color: "var(--red)", fontWeight: 700 };
+                      if (isUserOption && isCorrect) {
+                        style = { color: "var(--green)", fontWeight: 700 };
+                      } else if (isUserOption && !isCorrect) {
+                        style = { color: "var(--red)", fontWeight: 700 };
+                      } else if (isCorrectOption && !isUserOption) {
+                        style = { color: "var(--green)", fontWeight: 700 };
+                      }
 
                       return (
                         <div key={j} className="answer-option">
                           <span className="answer-marker" style={style}>
-                            {isCorrectOption ? "✓" : isUserOption && !isCorrect ? "✗" : "·"}
+                            {isUserOption && isCorrect ? "✓" : isUserOption && !isCorrect ? "✗" : isCorrectOption ? "✓" : "·"}
                           </span>
                           <span style={style}>
-                            {typeof opt === 'string' ? opt : opt.text || `Option ${j+1}`}
+                            {optionText}
                           </span>
                         </div>
                       );
