@@ -129,7 +129,7 @@ export default function HistoryPage() {
       <main className="history-main">
         <button className="btn-back" onClick={() => navigate("/dashboard")}>← Back to Dashboard</button>
         <h1 className="history-title">Quiz History</h1>
-        <p className="history-sub">Track your learning journey and review past answers</p>
+        <p className="history-sub">Track your learning journey and review past attempts</p>
 
         {loading ? (
           <div className="history-loading-wrap">

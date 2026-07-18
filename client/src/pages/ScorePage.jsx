@@ -76,14 +76,15 @@ export default function ScorePage() {
                 const userAns = answers[i] ?? -1;
                 const isFlagged = tagged[i] || false;
 
-                // ✅ Use q.isCorrect directly – it's passed from QuizPage
-                // If it's undefined, use q.correct (correct index) to compare
                 let isCorrect = false;
                 if (q.isCorrect !== undefined) {
                   isCorrect = q.isCorrect === true;
-                } else if (q.correct !== undefined) {
-                  // Fallback: compare user's answer index to correct index
-                  isCorrect = userAns === q.correct;
+                } else {
+                  // Fallback: compare user's answer text to correctOptionText
+                  const userAnswerText = userAns >= 0 && q.options && q.options[userAns] 
+                    ? (typeof q.options[userAns] === 'string' ? q.options[userAns] : q.options[userAns].text) 
+                    : '';
+                  isCorrect = userAnswerText === q.correctOptionText;
                 }
 
                 return (
@@ -99,25 +100,23 @@ export default function ScorePage() {
                     {q.options && q.options.map((opt, j) => {
                       const optionText = typeof opt === 'string' ? opt : opt.text || `Option ${j+1}`;
                       const isUserOption = j === userAns;
-                      const isCorrectOption = q.correct !== undefined ? j === q.correct : false;
+                      const isCorrectOption = q.correctOptionText && optionText === q.correctOptionText;
 
+                      let marker = '·';
                       let style = { color: "var(--text-muted)" };
-                      if (isUserOption && isCorrect) {
+
+                      if (isCorrectOption) {
+                        marker = '✓';
                         style = { color: "var(--green)", fontWeight: 700 };
                       } else if (isUserOption && !isCorrect) {
+                        marker = '✗';
                         style = { color: "var(--red)", fontWeight: 700 };
-                      } else if (isCorrectOption && !isUserOption) {
-                        style = { color: "var(--green)", fontWeight: 700 };
                       }
 
                       return (
                         <div key={j} className="answer-option">
-                          <span className="answer-marker" style={style}>
-                            {isUserOption && isCorrect ? "✓" : isUserOption && !isCorrect ? "✗" : isCorrectOption ? "✓" : "·"}
-                          </span>
-                          <span style={style}>
-                            {optionText}
-                          </span>
+                          <span className="answer-marker" style={style}>{marker}</span>
+                          <span style={style}>{optionText}</span>
                         </div>
                       );
                     })}

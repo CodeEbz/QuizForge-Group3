@@ -11,6 +11,12 @@
   z-index: 100;
   display: flex;
   align-items: center;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* Light mode: swap the hardcoded dark rgba to a light equivalent */
+[data-theme="light"] .navbar-header {
+  background: rgba(240, 244, 249, 0.88);
 }
 
 .navbar-container {
@@ -50,6 +56,15 @@
 .navbar-desktop-link:hover {
   color: var(--text);
   background: rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="light"] .navbar-desktop-link {
+  color: var(--text-muted);
+}
+
+[data-theme="light"] .navbar-desktop-link:hover {
+  color: var(--primary);
+  background: var(--blue-bg);
 }
 
 .navbar-desktop-link.active {
@@ -103,6 +118,33 @@
   color: var(--text-muted);
 }
 
+/* ── Theme Toggle Button ── */
+.navbar-theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.navbar-theme-toggle:hover {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--text-muted);
+  transform: scale(1.08);
+}
+
+.navbar-theme-toggle:active {
+  transform: scale(0.95);
+}
+
 /* Dropdown menu card */
 .navbar-dropdown {
   position: absolute;
@@ -133,6 +175,10 @@
   padding: 16px;
   border-bottom: 1px solid var(--border-dark);
   background: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .navbar-dropdown-header {
+  background: rgba(0, 0, 0, 0.03);
 }
 
 .dropdown-user-name {
@@ -187,6 +233,11 @@
   color: #fff;
 }
 
+[data-theme="light"] .dropdown-link-btn.active {
+  color: var(--primary);
+  background: var(--blue-bg);
+}
+
 .dropdown-link-btn.logout-trigger {
   color: var(--red);
 }
@@ -206,7 +257,7 @@
   display: none;
 }
 
-/* Logout Confirmation Modal Overlay & Modal */
+/* Logout Confirmation Modal */
 .logout-overlay {
   position: fixed;
   inset: 0;
@@ -296,8 +347,8 @@
 }
 
 /* ==================================
-   Responsive Styles
-   ================================== */
+   Responsive
+================================== */
 @media (max-width: 900px) {
   .navbar-desktop-nav {
     display: none;

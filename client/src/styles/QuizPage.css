@@ -617,6 +617,10 @@
   transform: scale(0.97);
 }
 
+[data-theme="light"] .quiz-topbar {
+  background: rgba(240, 244, 249, 0.88);
+}
+
 @media (max-width: 540px) {
   .review-grid {
     grid-template-columns: repeat(4, 1fr);

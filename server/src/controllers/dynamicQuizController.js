@@ -12,7 +12,7 @@ const subjectMap = {
   "css": "CSS",
   "mongodb": "MongoDB",
   "node-js": "Node.js",
-  "express": "Express",
+  "expressjs": "Express",
   "python": "Python",
   "java": "Java",
   "c++": "C++",
@@ -120,7 +120,7 @@ const getOrCreatePool = async (subject, difficulty, userId) => {
     }));
 
     pool = await Quiz.create({
-      title: `${subject} Pool (${difficulty})`,
+      title: `${subject} Quiz`,
       subject: subject,
       difficulty: difficulty.toLowerCase(),
       questionCount: formatted.length,
@@ -168,7 +168,6 @@ const generateDynamicQuiz = asyncHandler(async (req, res) => {
   // ---- AGGRESSIVE QUESTION COUNT FALLBACK ----
   let questionCountNum;
   if (!questionCount || isNaN(parseInt(questionCount, 10))) {
-    // Fallback based on difficulty
     switch (difficulty.toLowerCase()) {
       case 'easy':   questionCountNum = 20; break;
       case 'medium': questionCountNum = 30; break;
@@ -180,7 +179,6 @@ const generateDynamicQuiz = asyncHandler(async (req, res) => {
     questionCountNum = parseInt(questionCount, 10);
   }
 
-  // Validate the final number
   if (![20, 30, 50].includes(questionCountNum)) {
     console.error(`❌ Invalid questionCount: ${questionCountNum}`);
     throw new ApiError(400, `Question count must be 20, 30 or 50. Received: ${questionCountNum}`);
@@ -197,7 +195,7 @@ const generateDynamicQuiz = asyncHandler(async (req, res) => {
   }
 
   // ----------------------------------------------------------
-  //  STEP 1: Handle "Other" (Trivia) – no pooling
+  //  STEP 1: Handle "Other" (Trivia) – SAVE TO DATABASE
   // ----------------------------------------------------------
   if (TRIVIA_SUBJECTS.includes(normalizedSubject)) {
     console.log(`📚 Generating ${difficulty} trivia with Open Trivia DB...`);
@@ -210,22 +208,58 @@ const generateDynamicQuiz = asyncHandler(async (req, res) => {
     if (!questions || questions.length === 0) {
       throw new ApiError(500, 'No trivia questions generated.');
     }
-    const sanitized = questions.map(q => ({
+
+    // ✅ Format questions for database
+    const formatted = questions.map((q, index) => ({
+      questionText: q.questionText,
+      options: q.options.map((o, i) => ({
+        text: o.text,
+        isCorrect: !!o.isCorrect,
+      })),
+      explanation: q.explanation || "No explanation provided.",
+      points: q.points || 1,
+    }));
+
+    // ✅ Save trivia quiz to database (NOT as a pool)
+    const quiz = await Quiz.create({
+      title: `${normalizedSubject} Quiz`,
+      subject: normalizedSubject,
+      difficulty: difficulty.toLowerCase(),
+      questionCount: formatted.length,
+      generatedBy: 'opentdb',
+      questions: formatted,
+      timeLimitSeconds: timeLimitSeconds,
+      createdBy: req.user._id,
+      isPool: false, // Important: NOT a pool
+    });
+
+    console.log(`💾 Trivia quiz saved with ID: ${quiz._id}`);
+
+    // ✅ Format for frontend (hide correct answers)
+    const sanitizedQuestions = quiz.questions.map((q) => ({
+      _id: q._id,
       questionText: q.questionText,
       points: q.points || 1,
       explanation: q.explanation || "No explanation provided.",
-      options: q.options.map(o => ({ text: o.text })),
+      options: q.options.map((o) => ({
+        _id: o._id,
+        text: o.text,
+      })),
+      // ✅ Add correctOptionId for accurate grading
+      correctOptionId: q.options.find(o => o.isCorrect)?._id || null,
     }));
+
     return res.status(200).json({
       success: true,
       message: "Trivia quiz generated.",
       data: {
-        title: `${normalizedSubject} Quiz`,
-        subject: normalizedSubject,
-        difficulty: difficulty.toLowerCase(),
-        questionCount: questionCountNum,
-        timeLimitSeconds,
-        questions: sanitized,
+        quizId: quiz._id, // ✅ Now a real ObjectId
+        title: quiz.title,
+        subject: quiz.subject,
+        difficulty: quiz.difficulty,
+        questionCount: quiz.questionCount,
+        timeLimitSeconds: quiz.timeLimitSeconds,
+        questions: sanitizedQuestions,
       },
     });
   }
@@ -259,7 +293,6 @@ const generateDynamicQuiz = asyncHandler(async (req, res) => {
   const shuffled = [...pool.questions].sort(() => Math.random() - 0.5);
   const selected = shuffled.slice(0, needed);
 
-  // ---- SAFETY CHECK ----
   if (selected.length !== needed) {
     console.error(`❌ Selected ${selected.length} questions, but expected ${needed}. Forcing fix.`);
     while (selected.length < needed) {
@@ -276,17 +309,17 @@ const generateDynamicQuiz = asyncHandler(async (req, res) => {
   // ----------------------------------------------------------
   //  STEP 5: Format response (hide correct answers)
   // ----------------------------------------------------------
-const sanitizedQuestions = selected.map(q => {
-  const correctOption = q.options.find(o => o.isCorrect);
-  return {
-    _id: q._id,
-    questionText: q.questionText,
-    points: q.points || 1,
-    explanation: q.explanation || "No explanation provided.",
-    options: q.options.map(o => ({ _id: o._id, text: o.text })),
-    correctOptionId: correctOption ? correctOption._id : null, // ✅ ADD THIS
-  };
-});
+  const sanitizedQuestions = selected.map(q => {
+    const correctOption = q.options.find(o => o.isCorrect);
+    return {
+      _id: q._id,
+      questionText: q.questionText,
+      points: q.points || 1,
+      explanation: q.explanation || "No explanation provided.",
+      options: q.options.map(o => ({ _id: o._id, text: o.text })),
+      correctOptionId: correctOption ? correctOption._id : null,
+    };
+  });
 
   // ----------------------------------------------------------
   //  STEP 6: Return the quiz

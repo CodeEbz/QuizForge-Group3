@@ -64,29 +64,29 @@
        Status Backgrounds & Borders
     ====================================== */
 
-    --green-bg:     #0f2018;
-    --green-border: #1a3a28;
+    --green-bg:     #162a20;
+    --green-border: #1f4030;
 
-    --blue-bg:      #0f1a2e;
-    --blue-border:  #1a2d48;
+    --blue-bg:      #152035;
+    --blue-border:  #1e3252;
 
-    --orange-bg:     #1e1508;
-    --orange-border: #3a2810;
+    --orange-bg:     #231a0a;
+    --orange-border: #3d2c12;
 
-    --red-bg:     #1e0808;
-    --red-border: #3d1515;
+    --red-bg:     #220d0d;
+    --red-border: #3d1818;
 
-    --purple-bg:     #1a0f2e;
-    --purple-border: #2d1a48;
+    --purple-bg:     #1e1235;
+    --purple-border: #32204f;
 
-    --cyan-bg:     #081820;
-    --cyan-border: #0f3040;
+    --cyan-bg:     #0c1f28;
+    --cyan-border: #123444;
 
-    --yellow-bg:     #1e1a08;
-    --yellow-border: #3a3010;
+    --yellow-bg:     #21200a;
+    --yellow-border: #3d3812;
 
-    --pink-bg:     #1e0818;
-    --pink-border: #3a1030;
+    --pink-bg:     #22102a;
+    --pink-border: #3d1a42;
 
     /* =====================================
        Radius
@@ -105,6 +105,59 @@
     --shadow-card: 0 6px 18px rgba(0,0,0,.25);
     --shadow-modal: 0 20px 45px rgba(0,0,0,.45);
 
+}
+
+/* =====================================
+   Light Mode Theme
+====================================== */
+
+[data-theme="light"] {
+    /* Backgrounds */
+    --bg: #f0f4f9;
+    --sidebar: #e2e9f2;
+    --surface: #ffffff;
+    --surface-2: #edf1f7;
+    --surface2:  #edf1f7;
+    --surface-3: #e2e9f2;
+
+    /* Text */
+    --text: #0f1c2e;
+    --text-body: #2d4057;
+    --text-muted: #64748b;
+    --text-faint: #94a3b8;
+
+    /* Borders */
+    --border: #cbd5e1;
+    --border-dark: #dde4ee;
+
+    /* Status Backgrounds & Borders — vivid tints for light mode */
+    --green-bg:     #bbf7d0;
+    --green-border: #4ade80;
+
+    --blue-bg:      #bfdbfe;
+    --blue-border:  #60a5fa;
+
+    --orange-bg:     #fed7aa;
+    --orange-border: #fb923c;
+
+    --red-bg:     #fecaca;
+    --red-border: #f87171;
+
+    --purple-bg:     #ddd6fe;
+    --purple-border: #a78bfa;
+
+    --cyan-bg:     #a5f3fc;
+    --cyan-border: #22d3ee;
+
+    --yellow-bg:     #fef08a;
+    --yellow-border: #facc15;
+
+    --pink-bg:     #fbcfe8;
+    --pink-border: #f472b6;
+
+    /* Shadows — softer in light mode */
+    --shadow-card: 0 4px 16px rgba(15,28,46,.08);
+    --shadow-modal: 0 20px 45px rgba(15,28,46,.16);
 }
 
 /* =====================================
@@ -246,4 +299,24 @@ h1, h2, h3, h4, h5, h6 {
 
 .btn-back:hover {
     color: var(--text);
+}
+
+/* =====================================
+   Light Mode: fix white inline icon colours
+   (React, C++, C#, SQL subject cards pass
+   iconColor="#ffffff" which is invisible on
+   light backgrounds — override to a dark shade)
+====================================== */
+[data-theme="light"] .subject-icon[style*="color: rgb(255, 255, 255)"],
+[data-theme="light"] .subject-icon[style*="color:#ffffff"],
+[data-theme="light"] .subject-icon[style*="color: #ffffff"] {
+    color: #1e293b !important;
+}
+
+
+[data-theme="light"] .stat-card,
+[data-theme="light"] .stat-mini-card {
+    background: #bfdbfe;
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.15);
 }

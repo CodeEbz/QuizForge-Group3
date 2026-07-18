@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "./Logo";
+import { useTheme } from "../hooks/useTheme";
 import "../styles/Navbar.css";
 
 const navLinks = [
@@ -11,9 +12,38 @@ const navLinks = [
   { label: "Statistics", path: "/statistics" },
 ];
 
+// Sun icon (shown in dark mode → click to go light)
+function SunIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5"/>
+      <line x1="12" y1="1"  x2="12" y2="3"/>
+      <line x1="12" y1="21" x2="12" y2="23"/>
+      <line x1="4.22" y1="4.22"   x2="5.64" y2="5.64"/>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+      <line x1="1"  y1="12" x2="3"  y2="12"/>
+      <line x1="21" y1="12" x2="23" y2="12"/>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  );
+}
+
+// Moon icon (shown in light mode → click to go dark)
+function MoonIcon() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none"
+      stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+  );
+}
+
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const [showLogout, setShowLogout] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState({ name: "Explorer", email: "" });
@@ -25,7 +55,6 @@ export default function Navbar() {
       setUser(JSON.parse(storedUser));
     }
 
-    // Close dropdown on clicking outside
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
@@ -41,10 +70,9 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Sticky Top Header Navbar */}
       <header className="navbar-header">
         <div className="navbar-container">
-          
+
           <div className="navbar-brand" onClick={() => navigate("/dashboard")} style={{ cursor: "pointer" }}>
             <Logo width={140} className="navbar-brand-logo" />
           </div>
@@ -64,58 +92,80 @@ export default function Navbar() {
             })}
           </nav>
 
-          <div className="navbar-right" ref={dropdownRef}>
-            <button 
-              className="navbar-user-btn" 
-              onClick={() => setDropdownOpen(!dropdownOpen)}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+
+            {/* ── Theme toggle ── */}
+            <button
+              className="navbar-theme-toggle"
+              onClick={toggleTheme}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             >
-              <span className="navbar-user-name">{user.name}</span>
-              <div className="navbar-user-avatar">{initials}</div>
-              <span className="navbar-chevron">▼</span>
+              {theme === "dark" ? <SunIcon /> : <MoonIcon />}
             </button>
 
-            {dropdownOpen && (
-              <div className="navbar-dropdown">
-                <div className="navbar-dropdown-header">
-                  <p className="dropdown-user-name">{user.name}</p>
-                  <p className="dropdown-user-email">{user.email || (user.role === "guest" ? "Guest explorer" : "")}</p>
-                </div>
-                
-                <div className="navbar-dropdown-links">
-                  {/* Mobile links shown inside dropdown */}
-                  <div className="navbar-mobile-only-links">
-                    {navLinks.map((link) => (
-                      <button
-                        key={link.path}
-                        className={`dropdown-link-btn${location.pathname === link.path ? " active" : ""}`}
-                        onClick={() => { navigate(link.path); setDropdownOpen(false); }}
-                      >
-                        {link.label}
-                      </button>
-                    ))}
-                    <div className="dropdown-divider" />
+            {/* ── User dropdown ── */}
+            <div className="navbar-right" ref={dropdownRef}>
+              <button
+                className="navbar-user-btn"
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+              >
+                <span className="navbar-user-name">{user.name}</span>
+                <div className="navbar-user-avatar">{initials}</div>
+                <span className="navbar-chevron">▼</span>
+              </button>
+
+              {dropdownOpen && (
+                <div className="navbar-dropdown">
+                  <div className="navbar-dropdown-header">
+                    <p className="dropdown-user-name">{user.name}</p>
+                    <p className="dropdown-user-email">{user.email || (user.role === "guest" ? "Guest explorer" : "")}</p>
                   </div>
 
-                  <button 
-                    className={`dropdown-link-btn${location.pathname === "/profile" ? " active" : ""}`}
-                    onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
-                  >
-                    View Profile
-                  </button>
+                  <div className="navbar-dropdown-links">
+                    {/* Mobile-only nav links */}
+                    <div className="navbar-mobile-only-links">
+                      {navLinks.map((link) => (
+                        <button
+                          key={link.path}
+                          className={`dropdown-link-btn${location.pathname === link.path ? " active" : ""}`}
+                          onClick={() => { navigate(link.path); setDropdownOpen(false); }}
+                        >
+                          {link.label}
+                        </button>
+                      ))}
+                      <div className="dropdown-divider" />
+                    </div>
 
-                  <div className="dropdown-divider" />
-                  
-                  <button 
-                    className="dropdown-link-btn logout-trigger"
-                    onClick={() => { setShowLogout(true); setDropdownOpen(false); }}
-                  >
-                    Log Out
-                  </button>
+                    <button
+                      className={`dropdown-link-btn${location.pathname === "/profile" ? " active" : ""}`}
+                      onClick={() => { navigate("/profile"); setDropdownOpen(false); }}
+                    >
+                      View Profile
+                    </button>
+
+                    {/* Theme toggle inside dropdown (mobile-friendly label) */}
+                    <button
+                      className="dropdown-link-btn"
+                      onClick={() => { toggleTheme(); setDropdownOpen(false); }}
+                    >
+                      {theme === "dark" ? "☀️ Light Mode" : "🌙 Dark Mode"}
+                    </button>
+
+                    <div className="dropdown-divider" />
+
+                    <button
+                      className="dropdown-link-btn logout-trigger"
+                      onClick={() => { setShowLogout(true); setDropdownOpen(false); }}
+                    >
+                      Log Out
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
+          </div>
         </div>
       </header>
 

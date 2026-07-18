@@ -89,10 +89,21 @@ export default function QuizPage() {
         });
 
         if (genRes.success) {
+          let questions = genRes.data.questions;
+
+          //Ensure every option has a unique _id
+          questions = questions.map(q => ({
+            ...q,
+            options: q.options.map((opt, idx) => ({
+              ...opt,
+              _id: opt._id || `opt-${Math.random().toString(36).substr(2, 9)}-${idx}`,
+            })),
+          }));
+
           setQuizId(genRes.data.quizId);
-          setQuestions(genRes.data.questions);
-          setAnswers(Array(genRes.data.questions.length).fill(null));
-          setTaggedQuestions(Array(genRes.data.questions.length).fill(false));
+          setQuestions(questions);
+          setAnswers(Array(questions.length).fill(null));
+          setTaggedQuestions(Array(questions.length).fill(false));
           if (genRes.data.timeLimitSeconds) {
             setTimeLeft(genRes.data.timeLimitSeconds);
           }
@@ -117,71 +128,27 @@ export default function QuizPage() {
   }, [subject, difficulty, config, navigate]);
 
   // Handle quiz submission (Guest + Registered)
-const handleSubmit = useCallback(async () => {
-  if (submittedRef.current || submitting) return;
-  submittedRef.current = true;
-  setSubmitting(true);
-  setIsGrading(true);
-  const timeTakenSeconds = config.time - timeLeft;
+  const handleSubmit = useCallback(async () => {
+    if (submittedRef.current || submitting) return;
+    submittedRef.current = true;
+    setSubmitting(true);
+    setIsGrading(true);
+    const timeTakenSeconds = config.time - timeLeft;
 
-  // ---- GUEST MODE ----
-  if (isGuestMode()) {
-    let localScore = 0;
-    const gradedQuestions = questions.map((q, idx) => {
-      const userAns = answers[idx];
-      const correctIdx = q.options.findIndex(o => o.isCorrect);
-      const isCorrect = userAns && userAns.selectedOptionIndex === correctIdx;
-      if (isCorrect) localScore++;
-      return {
-        question: q.questionText,
-        options: q.options.map(o => o.text),
-        correct: correctIdx,
-        isCorrect: isCorrect,
-        explanation: q.explanation || "No explanation provided.",
-      };
-    });
-
-    navigate("/score", {
-      state: {
-        score: localScore,
-        total: questions.length,
-        subject: subjectName,
-        difficulty: config.label,
-        answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
-        questions: gradedQuestions,
-        isOffline: false,
-        tagged: taggedQuestions,
-      },
-    });
-    setIsGrading(false);
-    setSubmitting(false);
-    return;
-  }
-
-  // ---- REGISTERED USER ----
-  try {
-    const formattedAnswers = answers.map((ans, idx) => ({
-      questionId: questions[idx]._id,
-      selectedOptionId: ans ? ans.selectedOptionId : null,
-    }));
-
-    const submitRes = await api.submitAttempt({
-      quizId,
-      answers: formattedAnswers,
-      timeTakenSeconds,
-    });
-
-    if (submitRes.success) {
-      // ✅ Grade using correctOptionId (only available for generated quizzes)
+    // ---- GUEST MODE ----
+    if (isGuestMode()) {
       let localScore = 0;
       const gradedQuestions = questions.map((q, idx) => {
         const userAns = answers[idx];
-        const isCorrect = userAns && userAns.selectedOptionId === q.correctOptionId;
+        const correctIdx = q.options.findIndex(o => o.isCorrect);
+        const isCorrect = userAns && userAns.selectedOptionIndex === correctIdx;
         if (isCorrect) localScore++;
+        const correctOption = q.options[correctIdx];
         return {
           question: q.questionText,
           options: q.options.map(o => o.text),
-          correctOptionId: q.correctOptionId,
+          correct: correctIdx,
+          correctOptionText: correctOption ? correctOption.text : '', // ✅
           isCorrect: isCorrect,
           explanation: q.explanation || "No explanation provided.",
         };
@@ -189,33 +156,80 @@ const handleSubmit = useCallback(async () => {
 
       navigate("/score", {
         state: {
-          score: submitRes.data.score ?? localScore,
-          total: submitRes.data.totalQuestions ?? questions.length,
-          subject: subjectName || "Unknown",
-          difficulty: config.label || "Easy",
+          score: localScore,
+          total: questions.length,
+          subject: subjectName,
+          difficulty: config.label,
           answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
           questions: gradedQuestions,
           isOffline: false,
-          tagged: taggedQuestions || [],
+          tagged: taggedQuestions,
         },
       });
-    } else {
-      setError(submitRes.error || "Submission failed. Please try again.");
+      setIsGrading(false);
+      setSubmitting(false);
+      return;
+    }
+
+    // ---- REGISTERED USER ----
+    try {
+      const formattedAnswers = answers.map((ans, idx) => ({
+        questionId: questions[idx]._id,
+        selectedOptionId: ans ? ans.selectedOptionId : null,
+      }));
+
+      const submitRes = await api.submitAttempt({
+        quizId,
+        answers: formattedAnswers,
+        timeTakenSeconds,
+      });
+
+      if (submitRes.success) {
+        let localScore = 0;
+        const gradedQuestions = questions.map((q, idx) => {
+          const userAns = answers[idx];
+          const isCorrect = userAns && userAns.selectedOptionId === q.correctOptionId;
+          if (isCorrect) localScore++;
+          const correctOption = q.options.find(o => o._id === q.correctOptionId);
+          return {
+            question: q.questionText,
+            options: q.options.map(o => o.text),
+            correctOptionId: q.correctOptionId,
+            correctOptionText: correctOption ? correctOption.text : '', // ✅
+            isCorrect: isCorrect,
+            explanation: q.explanation || "No explanation provided.",
+          };
+        });
+
+        navigate("/score", {
+          state: {
+            score: submitRes.data.score ?? localScore,
+            total: submitRes.data.totalQuestions ?? questions.length,
+            subject: subjectName || "Unknown",
+            difficulty: config.label || "Easy",
+            answers: answers.map(a => (a ? a.selectedOptionIndex : -1)),
+            questions: gradedQuestions,
+            isOffline: false,
+            tagged: taggedQuestions || [],
+          },
+        });
+      } else {
+        setError(submitRes.error || "Submission failed. Please try again.");
+        submittedRef.current = false;
+      }
+    } catch (err) {
+      console.error("Submit failed:", err);
+      if (err.status === 401) {
+        setError("Session expired. Please log in again.");
+      } else {
+        setError("Failed to submit quiz. Please check your connection.");
+      }
       submittedRef.current = false;
+    } finally {
+      setIsGrading(false);
+      setSubmitting(false);
     }
-  } catch (err) {
-    console.error("Submit failed:", err);
-    if (err.status === 401) {
-      setError("Session expired. Please log in again.");
-    } else {
-      setError("Failed to submit quiz. Please check your connection.");
-    }
-    submittedRef.current = false;
-  } finally {
-    setIsGrading(false);
-    setSubmitting(false);
-  }
-}, [answers, questions, quizId, timeLeft, config, subjectName, navigate, taggedQuestions, submitting]);
+  }, [answers, questions, quizId, timeLeft, config, subjectName, navigate, taggedQuestions, submitting]);
 
   // Timer auto-submit
   useEffect(() => {
@@ -453,7 +467,7 @@ const handleSubmit = useCallback(async () => {
           <div className="quiz-options">
             {q.options.map((opt, i) => (
               <button
-                key={opt._id}
+                key={opt._id || i}
                 className={`quiz-option${selectedOptId === opt._id ? " selected" : ""}`}
                 onClick={() => handleOption(opt._id, i)}
               >
