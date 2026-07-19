@@ -17,17 +17,18 @@ const subjectMap = {
   "java": "Java",
   "c++": "C++",
   "c#": "C#",
+  "c":"C#",
   "sql": "SQL",
   "data-structures": "Data Structures",
   "algorithms": "Algorithms",
   "other": "Other"
 };
 
-// Subjects that fall back to Open Trivia DB (no pooling)
+// Other quiz handled by Open Trivia DB API
 const TRIVIA_SUBJECTS = ["Other"];
 
 // ============================================================
-//  POOL CONFIGURATION – per difficulty (reduced for speed)
+//  POOL CONFIGURATION – per difficulty
 // ============================================================
 const getPoolTarget = (difficulty) => {
   switch (difficulty.toLowerCase()) {
@@ -42,7 +43,7 @@ const POOL_GENERATE_EXTRA = 1.2;
 const MAX_GENERATION_ATTEMPTS = 2;
 
 // ============================================================
-//  HELPER: Deduplicate (exact match only)
+//  HELPER: Deduplication (exact match only)
 // ============================================================
 function normalizeText(text) {
   return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
