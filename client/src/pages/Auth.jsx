@@ -197,11 +197,11 @@ function LoginForm({ onSubmit, onGuest, onForgotTrigger, loading }) {
         value={password}
         onChange={e => setPassword(e.target.value)}
       />
-      <div className="forgot-password-link-wrap">
+      {/* <div className="forgot-password-link-wrap">
         <button type="button" className="forgot-password-link" onClick={onForgotTrigger}>
           Forgot Password?
         </button>
-      </div>
+      </div> */}
       <button type="submit" className="btn-submit" disabled={loading}>
         {loading ? "Logging In..." : "Log In to QuizForge"}
       </button>
