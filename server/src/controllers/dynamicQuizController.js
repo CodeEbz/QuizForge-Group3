@@ -12,6 +12,7 @@ const subjectMap = {
   "css": "CSS",
   "mongodb": "MongoDB",
   "node-js": "Node.js",
+  nodejs: "Node.js",
   "expressjs": "Express",
   "python": "Python",
   "java": "Java",
