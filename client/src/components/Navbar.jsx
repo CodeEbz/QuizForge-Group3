@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Logo from "./Logo";
-import { useTheme } from "../hooks/useTheme";
+import { useTheme } from "../hooks/ThemeContext";   // ✅ fixed import
 import "../styles/Navbar.css";
 
 const navLinks = [
@@ -43,7 +43,7 @@ function MoonIcon() {
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme();   // ✅ uncommented and working
   const [showLogout, setShowLogout] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState({ name: "Explorer", email: "" });

@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import {ThemeProvider} from "./hooks/ThemeContext";
 import AuthPage from "./pages/Auth";
 import DashboardPage from "./pages/Dashboard";
 import QuizMenu from "./pages/QuizMenu";
@@ -15,7 +16,8 @@ import ScrollToTop from "./components/ScrollToTop";
 function App() {
   return (
     <BrowserRouter>
-      <ScrollToTop />
+      <ThemeProvider>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<Navigate to="/auth" />} />
           <Route path="/auth" element={<AuthPage />} />
@@ -29,6 +31,7 @@ function App() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/history" element={<HistoryPage />} />
         </Routes>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

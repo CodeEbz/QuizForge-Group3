@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import Navbar from "../components/Navbar"
+import {useTheme} from "../hooks/ThemeContext"
 import { isGuestMode } from "../services/api"
-import { useTheme } from "../hooks/useTheme"
 import "../styles/QuizMenu.css"
 
 const subjects = [
